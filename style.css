@@ -1,6 +1,7 @@
+
 body {
 
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
 
     display: flex;
 
@@ -10,11 +11,7 @@ body {
 
     height: 100vh;
 
-    background-color: #F7F8FC; /* لون خلفية مريح */
-
-    text-align: center;
-
-    margin: 0;
+    background-color: #f8f9fa;
 
 }
 
@@ -24,39 +21,25 @@ body {
 
     text-align: center;
 
-    background: #FFFFFF; /* لون أبيض هادئ */
+    background: white;
 
     padding: 20px;
 
-    border-radius: 12px;
+    border-radius: 10px;
 
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
-    width: 80%;
+    width: 90%;
 
-    max-width: 500px;
-
-}
-
-
-
-/* عناوين الصفحة */
-
-h1 {
-
-    color: #2C3E50; /* لون داكن لكنه مريح */
-
-    font-size: 24px;
+    max-width: 400px;
 
 }
 
 
 
-h2, h3 {
+h1, h2, h3 {
 
-    color: #34495E; /* لون أفتح قليلاً */
-
-    font-size: 18px;
+    margin: 10px 0;
 
 }
 
@@ -64,153 +47,68 @@ h2, h3 {
 
 button {
 
-    padding: 12px;
-
-    margin: 10px 0;
+    padding: 10px;
 
     border: none;
 
     cursor: pointer;
 
+    width: 100%;
+
+    margin: 5px 0;
+
     font-size: 16px;
 
-    border-radius: 6px;
-
-    width: 100%;
-
-    transition: 0.3s;
-
-}
-
-
-
-/* زر تسجيل الصوت */
-
-#start-recording {
-
-    background-color: #4CAF50; /* أخضر مريح */
-
-    color: white;
-
-}
-
-
-
-#start-recording:hover {
-
-    background-color: #45A049;
-
-}
-
-
-
-/* زر إيقاف التسجيل */
-
-#stop-recording {
-
-    background-color: #E74C3C; /* أحمر مريح */
-
-    color: white;
-
-}
-
-
-
-#stop-recording:hover {
-
-    background-color: #C0392B;
-
-}
-
-
-
-/* زر تحميل الصورة */
-
-#upload-image {
-
-    background-color: #3498DB; /* أزرق هادئ */
-
-    color: white;
-
-}
-
-
-
-#upload-image:hover {
-
-    background-color: #2980B9;
-
-}
-
-
-
-/* زر حفظ الفيديو */
-
-#save-to-camera-roll {
-
-    background-color: #2ECC71; /* أخضر فاتح */
-
-    color: white;
-
-}
-
-
-
-#save-to-camera-roll:hover {
-
-    background-color: #27AE60;
-
-}
-
-
-
-.recording-section, .upload-section, .preview-section {
-
-    margin-top: 15px;
-
-}
-
-
-
-.preview-section img {
-
-    max-width: 100%;
-
-    margin-top: 10px;
-
-    border-radius: 10px;
-
-    border: 2px solid #BDC3C7; /* إطار خفيف */
-
-}
-
-
-
-audio {
-
-    width: 100%;
-
-    margin-top: 10px;
-
-    background-color: #ECF0F1;
-
     border-radius: 5px;
 
 }
 
 
 
-/* تحسين إدخال الصورة */
+.record-btn {
 
-input[type="file"] {
+    background-color: #28a745;
 
-    border: 1px solid #BDC3C7;
-
-    padding: 5px;
-
-    border-radius: 5px;
-
-    background: #ECF0F1;
+    color: white;
 
 }
 
+
+
+.stop-btn {
+
+    background-color: #dc3545;
+
+    color: white;
+
+}
+
+
+
+.upload-btn {
+
+    background-color: #007bff;
+
+    color: white;
+
+}
+
+
+
+.save-btn {
+
+    background-color: #ffc107;
+
+    color: black;
+
+}
+
+
+
+button:disabled {
+
+    background-color: #6c757d;
+
+    cursor: not-allowed;
+
+}

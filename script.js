@@ -1,3 +1,4 @@
+
 let mediaRecorder;
 
 let audioChunks = [];
@@ -14,7 +15,13 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+
+
         mediaRecorder = new MediaRecorder(stream);
+
+        audioChunks = [];  // **إعادة تعيين قائمة الصوتيات لتجنب التكرار**
+
+
 
         mediaRecorder.start();
 
@@ -28,7 +35,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.ondataavailable = event => {
 
-            audioChunks.push(event.data);
+            if (event.data.size > 0) {
+
+                audioChunks.push(event.data);
+
+            }
 
         };
 
@@ -36,27 +47,31 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-            document.getElementById('audio').src = audioUrl;
+            const audioElement = document.getElementById('audio');
 
-            document.getElementById('audio').style.display = 'block';
+
+
+            audioElement.src = audioUrl;
+
+            audioElement.style.display = 'block';
 
             document.getElementById('preview-audio').src = audioUrl;
 
             document.getElementById('preview-audio').style.display = 'block';
 
-            audioChunks = [];
-
         };
+
+
 
     } catch (error) {
 
-        console.error("حدث خطأ أثناء تشغيل الميكروفون:", error);
+        console.error("❌ خطأ أثناء تشغيل الميكروفون:", error);
 
-        alert("يرجى السماح بالوصول إلى الميكروفون.");
+        alert("⚠️ تأكد من السماح باستخدام الميكروفون في إعدادات الهاتف.");
 
     }
 
@@ -114,7 +129,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("يرجى تحميل صورة.");
+        alert("⚠️ يرجى تحميل صورة.");
 
     }
 
@@ -126,7 +141,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -190,7 +205,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             document.body.removeChild(a);
 
-            alert("تم حفظ الفيديو!");
+            alert("✅ تم حفظ الفيديو!");
 
         };
 
@@ -215,6 +230,4 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
     };
 
 });
-
-
 
