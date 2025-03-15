@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eid Greeting Card</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Happy Eid</h1>
+        <h2>Eid Mubarak</h2>
+        <h3>Create an Eid Greeting Card</h3>
+        
+        <div class="recording-section">
+            <button id="start-recording">Start Recording</button>
+            <button id="stop-recording" disabled>Stop Recording</button>
+            <audio id="audio" controls></audio>
+        </div>
+
+        <div class="upload-section">
+            <input type="file" id="image-upload" accept="image/*">
+            <button id="upload-image">Upload Image</button>
+        </div>
+
+        <div class="preview-section">
+            <img id="preview-image" src="" alt="Preview" style="display:none;">
+            <audio id="preview-audio" controls style="display:none;"></audio>
+        </div>
+
+        <button id="save-to-camera-roll" style="display:none;">Save to Camera Roll</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
