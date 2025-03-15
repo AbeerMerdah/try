@@ -1,27 +1,105 @@
 
-Run
-Copy code
 body {
+
     font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+
+    text-align: center;
+
     background-color: #f0f0f0;
+
+    padding: 20px;
+
 }
+
+
 
 .container {
-    text-align: center;
+
     background: white;
+
     padding: 20px;
+
     border-radius: 10px;
+
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    display: inline-block;
+
 }
+
+
 
 h1, h2, h3 {
+
     margin: 10px 0;
+
 }
 
-.recording-section, .upload-section {
-    margin: 20px 0;
+
+
+button {
+
+    padding: 10px 15px;
+
+    margin: 10px;
+
+    border: none;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    border-radius: 5px;
+
 }
+
+
+
+#start-recording {
+
+    background-color: green;
+
+    color: white;
+
+}
+
+
+
+#stop-recording {
+
+    background-color: red;
+
+    color: white;
+
+}
+
+
+
+#upload-image {
+
+    background-color: blue;
+
+    color: white;
+
+}
+
+
+
+#save-to-camera-roll {
+
+    background-color: black;
+
+    color: white;
+
+}
+
+
+
+.preview-section img {
+
+    max-width: 100%;
+
+    margin-top: 10px;
+
+}
+
