@@ -1,19 +1,28 @@
-
 body {
 
     font-family: Arial, sans-serif;
 
-    text-align: center;
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    height: 100vh;
 
     background-color: #f0f0f0;
 
-    padding: 20px;
+    text-align: center;
+
+    margin: 0;
 
 }
 
 
 
 .container {
+
+    text-align: center;
 
     background: white;
 
@@ -23,7 +32,9 @@ body {
 
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 
-    display: inline-block;
+    width: 80%;
+
+    max-width: 500px;
 
 }
 
@@ -50,6 +61,8 @@ button {
     font-size: 16px;
 
     border-radius: 5px;
+
+    width: 100%;
 
 }
 
@@ -95,9 +108,29 @@ button {
 
 
 
+.recording-section, .upload-section, .preview-section {
+
+    margin-top: 20px;
+
+}
+
+
+
 .preview-section img {
 
     max-width: 100%;
+
+    margin-top: 10px;
+
+    border-radius: 10px;
+
+}
+
+
+
+audio {
+
+    width: 100%;
 
     margin-top: 10px;
 
