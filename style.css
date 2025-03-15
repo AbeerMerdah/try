@@ -10,7 +10,7 @@ body {
 
     height: 100vh;
 
-    background-color: #f0f0f0;
+    background-color: #F7F8FC; /* لون خلفية مريح */
 
     text-align: center;
 
@@ -24,13 +24,13 @@ body {
 
     text-align: center;
 
-    background: white;
+    background: #FFFFFF; /* لون أبيض هادئ */
 
     padding: 20px;
 
-    border-radius: 10px;
+    border-radius: 12px;
 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
     width: 80%;
 
@@ -40,9 +40,23 @@ body {
 
 
 
-h1, h2, h3 {
+/* عناوين الصفحة */
 
-    margin: 10px 0;
+h1 {
+
+    color: #2C3E50; /* لون داكن لكنه مريح */
+
+    font-size: 24px;
+
+}
+
+
+
+h2, h3 {
+
+    color: #34495E; /* لون أفتح قليلاً */
+
+    font-size: 18px;
 
 }
 
@@ -50,9 +64,9 @@ h1, h2, h3 {
 
 button {
 
-    padding: 10px 15px;
+    padding: 12px;
 
-    margin: 10px;
+    margin: 10px 0;
 
     border: none;
 
@@ -60,37 +74,61 @@ button {
 
     font-size: 16px;
 
-    border-radius: 5px;
+    border-radius: 6px;
 
     width: 100%;
 
+    transition: 0.3s;
+
 }
 
 
+
+/* زر تسجيل الصوت */
 
 #start-recording {
 
-    background-color: green;
+    background-color: #4CAF50; /* أخضر مريح */
 
     color: white;
 
 }
 
 
+
+#start-recording:hover {
+
+    background-color: #45A049;
+
+}
+
+
+
+/* زر إيقاف التسجيل */
 
 #stop-recording {
 
-    background-color: red;
+    background-color: #E74C3C; /* أحمر مريح */
 
     color: white;
 
 }
 
 
+
+#stop-recording:hover {
+
+    background-color: #C0392B;
+
+}
+
+
+
+/* زر تحميل الصورة */
 
 #upload-image {
 
-    background-color: blue;
+    background-color: #3498DB; /* أزرق هادئ */
 
     color: white;
 
@@ -98,11 +136,29 @@ button {
 
 
 
+#upload-image:hover {
+
+    background-color: #2980B9;
+
+}
+
+
+
+/* زر حفظ الفيديو */
+
 #save-to-camera-roll {
 
-    background-color: black;
+    background-color: #2ECC71; /* أخضر فاتح */
 
     color: white;
+
+}
+
+
+
+#save-to-camera-roll:hover {
+
+    background-color: #27AE60;
 
 }
 
@@ -110,7 +166,7 @@ button {
 
 .recording-section, .upload-section, .preview-section {
 
-    margin-top: 20px;
+    margin-top: 15px;
 
 }
 
@@ -124,6 +180,8 @@ button {
 
     border-radius: 10px;
 
+    border: 2px solid #BDC3C7; /* إطار خفيف */
+
 }
 
 
@@ -133,6 +191,26 @@ audio {
     width: 100%;
 
     margin-top: 10px;
+
+    background-color: #ECF0F1;
+
+    border-radius: 5px;
+
+}
+
+
+
+/* تحسين إدخال الصورة */
+
+input[type="file"] {
+
+    border: 1px solid #BDC3C7;
+
+    padding: 5px;
+
+    border-radius: 5px;
+
+    background: #ECF0F1;
 
 }
 
