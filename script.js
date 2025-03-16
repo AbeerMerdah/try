@@ -8,65 +8,25 @@ let audioUrl;
 
 
 
-// ✅ التحقق من إذن الميكروفون عند بدء تشغيل الصفحة
-
-async function checkMicrophonePermission() {
-
-    try {
-
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        console.log("✅ تم منح إذن الميكروفون.");
-
-    } catch (error) {
-
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
-
-    }
-
-}
-
-
-
-// 🟢 استدعاء التحقق عند تحميل الصفحة
-
-checkMicrophonePermission();
-
-
-
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
 
-        console.log("🎤 محاولة الوصول إلى الميكروفون...");
+        // طلب إذن الميكروفون
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
-
-        console.log("✅ تم تشغيل الميكروفون!");
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorder = new MediaRecorder(stream);
 
-        mediaRecorder.start();
-
-
-
-        document.getElementById('start-recording').disabled = true;
-
-        document.getElementById('stop-recording').disabled = false;
+        audioChunks = [];
 
 
-
-        audioChunks = []; // تفريغ أي تسجيلات سابقة
 
         mediaRecorder.ondataavailable = event => {
 
-            if (event.data.size > 0) {
-
-                audioChunks.push(event.data);
-
-            }
+            audioChunks.push(event.data);
 
         };
 
@@ -74,21 +34,13 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            if (audioChunks.length === 0) {
-
-                alert("⚠️ لم يتم تسجيل أي صوت! حاول مرة أخرى.");
-
-                return;
-
-            }
-
-
-
-            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
 
+
+            // ضبط تشغيل الصوت بعد التسجيل فقط مرّة واحدة
 
             const audioElement = document.getElementById('audio');
 
@@ -98,19 +50,23 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             audioElement.controls = true;
 
-            audioElement.setAttribute("playsinline", "true"); // ✅ تشغيل الصوت على iPhone
-
-
-
-            console.log("🔊 تم تسجيل الصوت بنجاح!");
-
         };
+
+
+
+        mediaRecorder.start();
+
+        document.getElementById('start-recording').disabled = true;
+
+        document.getElementById('stop-recording').disabled = false;
+
+
 
     } catch (error) {
 
-        console.error("❌ خطأ في تشغيل الميكروفون:", error);
+        console.error("⚠️ خطأ في تشغيل الميكروفون:", error);
 
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز ثم إعادة المحاولة.");
 
     }
 
@@ -120,7 +76,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    if (mediaRecorder) {
 
         mediaRecorder.stop();
 
@@ -168,7 +124,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("يرجى تحميل صورة.");
+        alert("⚠️ يرجى تحميل صورة أولًا.");
 
     }
 
@@ -180,7 +136,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -194,7 +150,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     const image = new Image();
 
-    
+
 
     image.src = document.getElementById('preview-image').src;
 
@@ -208,9 +164,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-        const stream = canvas.captureStream(30);
+        // حفظ الفيديو مع الصوت
 
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+        const stream = canvas.captureStream(30); 
+
+        const mediaRecorder = new MediaRecorder(stream);
 
         const videoChunks = [];
 
@@ -226,17 +184,17 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         mediaRecorder.onstop = () => {
 
-            const videoBlob = new Blob(videoChunks, { type: 'video/mp4' });
+            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
             const videoUrl = URL.createObjectURL(videoBlob);
 
-            
+
 
             const a = document.createElement('a');
 
             a.href = videoUrl;
 
-            a.download = 'eid_greeting_card.mp4';
+            a.download = 'eid_greeting_card.webm';
 
             document.body.appendChild(a);
 
@@ -244,9 +202,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             document.body.removeChild(a);
 
-            
+            alert("✅ تم حفظ الفيديو بنجاح!");
 
-            alert("🎉 تم حفظ الفيديو بنجاح!");
+
+
+            // إعادة تمكين الزر بعد الحفظ
+
+            document.getElementById('save-to-camera-roll').disabled = false;
 
         };
 
@@ -257,8 +219,6 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
         
 
         const audio = new Audio(audioUrl);
-
-        audio.setAttribute("playsinline", "true"); // ✅ تشغيل الصوت على iPhone
 
         audio.play();
 
