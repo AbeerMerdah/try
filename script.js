@@ -6,23 +6,25 @@ let audioBlob;
 
 let audioUrl;
 
+let recordedStream;
+
 
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
-    audioChunks = []; // إعادة تعيين المصفوفة لمنع التكرار
+    audioChunks = []; // تفريغ أي تسجيلات سابقة
 
     try {
 
-        console.log("⏳ محاولة الوصول إلى الميكروفون...");
+        console.log("🎤 محاولة الوصول إلى الميكروفون...");
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        console.log("🎤 تم الوصول إلى الميكروفون بنجاح!");
+        console.log("✅ تم تشغيل الميكروفون!");
 
 
 
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp3' }); // استخدام MP3 للتوافق مع iPhone
 
         mediaRecorder.start();
 
@@ -48,7 +50,17 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            if (audioChunks.length === 0) {
+
+                alert("⚠️ لم يتم تسجيل أي صوت! حاول مرة أخرى.");
+
+                return;
+
+            }
+
+
+
+            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -66,7 +78,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     } catch (error) {
 
-        console.error("❌ خطأ في الوصول إلى الميكروفون:", error);
+        console.error("❌ خطأ في تشغيل الميكروفون:", error);
 
         alert("❌ يرجى السماح بالوصول إلى الميكروفون وإعادة المحاولة.");
 
@@ -78,7 +90,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
-    if (mediaRecorder) {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
 
         mediaRecorder.stop();
 
@@ -168,7 +180,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         const stream = canvas.captureStream(30); // 30 FPS
 
-        const mediaRecorder = new MediaRecorder(stream);
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
         const videoChunks = [];
 
@@ -184,7 +196,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         mediaRecorder.onstop = () => {
 
-            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+            const videoBlob = new Blob(videoChunks, { type: 'video/mp4' }); // حفظ الفيديو بصيغة MP4
 
             const videoUrl = URL.createObjectURL(videoBlob);
 
@@ -194,7 +206,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             a.href = videoUrl;
 
-            a.download = 'eid_greeting_card.webm';
+            a.download = 'eid_greeting_card.mp4';
 
             document.body.appendChild(a);
 
