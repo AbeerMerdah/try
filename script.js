@@ -8,19 +8,45 @@ let audioUrl;
 
 
 
+// ✅ التحقق من إذن الميكروفون عند بدء تشغيل الصفحة
+
+async function checkMicrophonePermission() {
+
+    try {
+
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        console.log("✅ تم منح إذن الميكروفون.");
+
+    } catch (error) {
+
+        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+
+    }
+
+}
+
+
+
+// 🟢 استدعاء التحقق عند تحميل الصفحة
+
+checkMicrophonePermission();
+
+
+
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
 
         console.log("🎤 محاولة الوصول إلى الميكروفون...");
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
 
         console.log("✅ تم تشغيل الميكروفون!");
 
 
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); // استخدام تنسيق متوافق
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
         mediaRecorder.start();
 
@@ -71,6 +97,12 @@ document.getElementById('start-recording').addEventListener('click', async () =>
             audioElement.style.display = 'block';
 
             audioElement.controls = true;
+
+            audioElement.setAttribute("playsinline", "true"); // ✅ تشغيل الصوت على iPhone
+
+
+
+            console.log("🔊 تم تسجيل الصوت بنجاح!");
 
         };
 
@@ -176,7 +208,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-        const stream = canvas.captureStream(30); // 30 FPS
+        const stream = canvas.captureStream(30);
 
         const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
 
@@ -225,6 +257,8 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
         
 
         const audio = new Audio(audioUrl);
+
+        audio.setAttribute("playsinline", "true"); // ✅ تشغيل الصوت على iPhone
 
         audio.play();
 
