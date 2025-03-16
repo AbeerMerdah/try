@@ -14,19 +14,9 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-
-
         mediaRecorder = new MediaRecorder(stream);
 
         audioChunks = [];
-
-        mediaRecorder.start();
-
-
-
-        document.getElementById('start-recording').disabled = true;
-
-        document.getElementById('stop-recording').disabled = false;
 
 
 
@@ -38,31 +28,21 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-        mediaRecorder.onstop = () => {
+        mediaRecorder.start();
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        
 
-            audioUrl = URL.createObjectURL(audioBlob);
+        document.getElementById('start-recording').disabled = true;
 
-
-
-            const audioElement = document.getElementById('audio');
-
-            audioElement.src = audioUrl;
-
-            audioElement.style.display = 'block';
+        document.getElementById('stop-recording').disabled = false;
 
 
-
-            document.getElementById('preview-audio').src = audioUrl;
-
-            document.getElementById('preview-audio').style.display = 'block';
-
-        };
 
     } catch (error) {
 
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+        console.error("Error accessing microphone:", error);
+
+        alert("يرجى السماح بالوصول إلى الميكروفون.");
 
     }
 
@@ -78,9 +58,29 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
     }
 
+    
+
     document.getElementById('start-recording').disabled = false;
 
     document.getElementById('stop-recording').disabled = true;
+
+
+
+    mediaRecorder.onstop = () => {
+
+        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+
+        audioUrl = URL.createObjectURL(audioBlob);
+
+        const audioElement = document.getElementById('audio');
+
+        audioElement.src = audioUrl;
+
+        audioElement.style.display = 'block';
+
+        audioElement.controls = true;
+
+    };
 
 });
 
@@ -120,7 +120,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("❌ يرجى تحميل صورة.");
+        alert("يرجى تحميل صورة.");
 
     }
 
@@ -132,7 +132,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("❌ يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -146,9 +146,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
     const image = new Image();
 
+    
+
     image.src = document.getElementById('preview-image').src;
 
-
+    
 
     image.onload = async () => {
 
@@ -160,21 +162,21 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        const stream = canvas.captureStream(30);
+        const videoStream = canvas.captureStream(30); // 30 FPS
 
-        const audioContext = new AudioContext();
-
-        const source = audioContext.createMediaElementSource(new Audio(audioUrl));
-
-        const destination = audioContext.createMediaStreamDestination();
-
-        source.connect(destination);
-
-        source.connect(audioContext.destination);
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 
 
-        const combinedStream = new MediaStream([...stream.getTracks(), ...destination.stream.getTracks()]);
+        const combinedStream = new MediaStream([
+
+            ...videoStream.getTracks(),
+
+            ...audioStream.getTracks()
+
+        ]);
+
+
 
         const mediaRecorder = new MediaRecorder(combinedStream);
 
@@ -208,7 +210,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             document.body.removeChild(a);
 
-            alert("✅ تم حفظ الفيديو مع الصوت!");
+            alert("تم حفظ الفيديو!");
 
         };
 
@@ -216,13 +218,15 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         mediaRecorder.start();
 
-        const audio = new Audio(audioUrl);
-
-        audio.play();
 
 
+        const recordedAudio = new Audio(audioUrl);
 
-        audio.onended = () => {
+        recordedAudio.play();
+
+
+
+        recordedAudio.onended = () => {
 
             mediaRecorder.stop();
 
