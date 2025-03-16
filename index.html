@@ -1,72 +1,36 @@
 <!DOCTYPE html>
-
-<html lang="ar">
-
+<html lang="en">
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>بطاقة تهنئة العيد</title>
-
+    <title>Eid Greeting Card</title>
     <link rel="stylesheet" href="style.css">
-
 </head>
-
 <body>
-
     <div class="container">
-
-        <h1>كل عام وأنتم بخير</h1>
-
-        <h2>عيدكم مبارك</h2>
-
-        <h3>إنشاء بطاقة تهنئة العيد</h3>
-
-
-
+        <h1>Happy Eid</h1>
+        <h2>Eid Mubarak</h2>
+        <h3>Create an Eid Greeting Card</h3>
+        
         <div class="recording-section">
-
-            <button id="start-recording" class="record-btn">🎤 تسجيل صوت التهنئة</button>
-
-            <button id="stop-recording" class="stop-btn" disabled>🛑 إيقاف التسجيل</button>
-
+            <button id="start-recording">Start Recording</button>
+            <button id="stop-recording" disabled>Stop Recording</button>
             <audio id="audio" controls style="display:none;"></audio>
-
         </div>
-
-
 
         <div class="upload-section">
-
             <input type="file" id="image-upload" accept="image/*">
-
-            <button id="upload-image" class="upload-btn">📸 تحميل الصورة</button>
-
+            <button id="upload-image">Upload Image</button>
         </div>
-
-
 
         <div class="preview-section">
-
             <img id="preview-image" src="" alt="Preview" style="display:none;">
-
             <audio id="preview-audio" controls style="display:none;"></audio>
-
         </div>
 
-
-
-        <button id="save-to-camera-roll" class="save-btn" style="display:none;">🎬 حفظ التهنئة كفيديو</button>
-
+        <button id="save-to-camera-roll" style="display:none;">Save to Camera Roll</button>
     </div>
 
-
-
     <script src="script.js"></script>
-
 </body>
-
 </html>
-

@@ -1,11 +1,7 @@
 let mediaRecorder;
-
 let audioChunks = [];
-
 let audioBlob;
-
 let audioUrl;
-
 
 
 document.getElementById('start-recording').addEventListener('click', async () => {
@@ -18,7 +14,6 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.start();
 
-      
         document.getElementById('start-recording').disabled = true;
         document.getElementById('stop-recording').disabled = false;
 
