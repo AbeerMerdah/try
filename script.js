@@ -40,13 +40,10 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-            document.getElementById('audio').src = audioUrl;
-
-            document.getElementById('audio').style.display = 'block';
-
-            document.getElementById('preview-audio').src = audioUrl;
-
-            document.getElementById('preview-audio').style.display = 'block';
+            const audioElement = document.getElementById('audio');
+            audioElement.src = audioUrl;
+            audioElement.style.display = 'block';
+            audioElement.controls = true;
 
             audioChunks = [];
 
