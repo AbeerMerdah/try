@@ -12,8 +12,6 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     try {
 
-        // طلب إذن الميكروفون
-
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 
@@ -21,6 +19,14 @@ document.getElementById('start-recording').addEventListener('click', async () =>
         mediaRecorder = new MediaRecorder(stream);
 
         audioChunks = [];
+
+        mediaRecorder.start();
+
+
+
+        document.getElementById('start-recording').disabled = true;
+
+        document.getElementById('stop-recording').disabled = false;
 
 
 
@@ -34,13 +40,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
 
-
-            // ضبط تشغيل الصوت بعد التسجيل فقط مرّة واحدة
 
             const audioElement = document.getElementById('audio');
 
@@ -48,25 +52,17 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             audioElement.style.display = 'block';
 
-            audioElement.controls = true;
+
+
+            document.getElementById('preview-audio').src = audioUrl;
+
+            document.getElementById('preview-audio').style.display = 'block';
 
         };
 
-
-
-        mediaRecorder.start();
-
-        document.getElementById('start-recording').disabled = true;
-
-        document.getElementById('stop-recording').disabled = false;
-
-
-
     } catch (error) {
 
-        console.error("⚠️ خطأ في تشغيل الميكروفون:", error);
-
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز ثم إعادة المحاولة.");
+        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
     }
 
@@ -124,7 +120,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("⚠️ يرجى تحميل صورة أولًا.");
+        alert("❌ يرجى تحميل صورة.");
 
     }
 
@@ -132,11 +128,11 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 
 
-document.getElementById('save-to-camera-roll').addEventListener('click', () => {
+document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("❌ يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -150,11 +146,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     const image = new Image();
 
-
-
     image.src = document.getElementById('preview-image').src;
 
-    image.onload = () => {
+
+
+    image.onload = async () => {
 
         canvas.width = image.width;
 
@@ -164,11 +160,23 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-        // حفظ الفيديو مع الصوت
+        const stream = canvas.captureStream(30);
 
-        const stream = canvas.captureStream(30); 
+        const audioContext = new AudioContext();
 
-        const mediaRecorder = new MediaRecorder(stream);
+        const source = audioContext.createMediaElementSource(new Audio(audioUrl));
+
+        const destination = audioContext.createMediaStreamDestination();
+
+        source.connect(destination);
+
+        source.connect(audioContext.destination);
+
+
+
+        const combinedStream = new MediaStream([...stream.getTracks(), ...destination.stream.getTracks()]);
+
+        const mediaRecorder = new MediaRecorder(combinedStream);
 
         const videoChunks = [];
 
@@ -188,8 +196,6 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             const videoUrl = URL.createObjectURL(videoBlob);
 
-
-
             const a = document.createElement('a');
 
             a.href = videoUrl;
@@ -202,21 +208,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             document.body.removeChild(a);
 
-            alert("✅ تم حفظ الفيديو بنجاح!");
-
-
-
-            // إعادة تمكين الزر بعد الحفظ
-
-            document.getElementById('save-to-camera-roll').disabled = false;
+            alert("✅ تم حفظ الفيديو مع الصوت!");
 
         };
 
 
 
         mediaRecorder.start();
-
-        
 
         const audio = new Audio(audioUrl);
 
