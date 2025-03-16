@@ -10,8 +10,7 @@
 
     <title>بطاقة تهنئة العيد</title>
 
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@latest"></script>
+    <link rel="stylesheet" href="styles.css">
 
 </head>
 
@@ -29,9 +28,9 @@
 
         <div class="recording-section">
 
-            <button id="start-recording" class="record-btn">🎤 تسجيل صوت التهنئة</button>
+            <button id="start-recording">🎤 تسجيل صوت التهنئة</button>
 
-            <button id="stop-recording" class="stop-btn" disabled>🛑 إيقاف التسجيل</button>
+            <button id="stop-recording" disabled>⛔ إيقاف التسجيل</button>
 
             <audio id="audio" controls style="display:none;"></audio>
 
@@ -43,7 +42,7 @@
 
             <input type="file" id="image-upload" accept="image/*">
 
-            <button id="upload-image" class="upload-btn">📸 تحميل الصورة</button>
+            <button id="upload-image">📷 تحميل الصورة</button>
 
         </div>
 
@@ -59,15 +58,16 @@
 
 
 
-        <button id="save-to-camera-roll" class="save-btn" style="display:none;">🎬 حفظ التهنئة كفيديو</button>
+        <button id="save-to-camera-roll" style="display:none;">🎥 حفظ التهنئة كفيديو</button>
 
     </div>
 
 
+
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0"></script>
 
     <script src="script.js"></script>
 
 </body>
 
 </html>
-

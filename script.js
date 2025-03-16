@@ -1,4 +1,3 @@
-
 let mediaRecorder;
 
 let audioChunks = [];
@@ -6,8 +5,6 @@ let audioChunks = [];
 let audioBlob;
 
 let audioUrl;
-
-let recordedAudio = null;
 
 
 
@@ -21,7 +18,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); 
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
         mediaRecorder.start();
 
@@ -47,29 +44,19 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            if (audioChunks.length === 0) { 
-
-                alert("⚠️ فشل التسجيل، الرجاء المحاولة مرة أخرى."); 
-
-                return;
-
-            }
-
-
-
             audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-            recordedAudio = audioBlob;
-
-
+            
 
             const audioElement = document.getElementById('audio');
 
             audioElement.src = audioUrl;
 
             audioElement.style.display = 'block';
+
+            audioElement.controls = true;
 
 
 
@@ -79,13 +66,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         };
 
-
-
     } catch (error) {
 
-        console.error("❌ خطأ أثناء تشغيل الميكروفون:", error);
+        console.error("حدث خطأ أثناء تشغيل الميكروفون:", error);
 
-        alert("⚠️ تأكد من السماح باستخدام الميكروفون في إعدادات الهاتف.");
+        alert("يرجى السماح بالوصول إلى الميكروفون.");
 
     }
 
@@ -153,7 +138,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
-    if (!recordedAudio || !document.getElementById('preview-image').src) {
+    if (!audioBlob || !document.getElementById('preview-image').src) {
 
         alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
@@ -163,130 +148,87 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    const canvas = document.createElement('canvas');
+    // تحويل الصوت إلى MP3 ليكون متوافقًا
 
-    const context = canvas.getContext('2d');
+    const audioFile = new File([audioBlob], "audio.mp3", { type: "audio/mpeg" });
 
-    const image = new Image();
+    const audioUrl = URL.createObjectURL(audioFile);
 
 
 
-    image.src = document.getElementById('preview-image').src;
+    // تحميل FFmpeg.js لمعالجة الفيديو
 
-    image.onload = async () => {
+    const { createFFmpeg, fetchFile } = FFmpeg;
 
-        canvas.width = image.width;
+    const ffmpeg = createFFmpeg({ log: true });
 
-        canvas.height = image.height;
 
-        context.drawImage(image, 0, 0);
 
+    await ffmpeg.load();
 
 
-        const videoStream = canvas.captureStream(30);
 
+    // رفع الملفات إلى FFmpeg
 
+    ffmpeg.FS("writeFile", "image.png", await fetchFile(document.getElementById("preview-image").src));
 
-        // **🛠️ استخدام FFmpeg لمعالجة الصوت داخل الفيديو**
+    ffmpeg.FS("writeFile", "audio.mp3", await fetchFile(audioUrl));
 
-        const { createFFmpeg, fetchFile } = FFmpeg;
 
-        const ffmpeg = createFFmpeg({ log: true });
 
+    // إنشاء الفيديو
 
+    await ffmpeg.run(
 
-        await ffmpeg.load();
+        "-loop", "1",
 
-        await ffmpeg.FS('writeFile', 'audio.webm', await fetchFile(recordedAudio));
+        "-i", "image.png",
 
+        "-i", "audio.mp3",
 
+        "-c:v", "libx264",
 
-        // تحويل الصوت إلى MP3 متوافق
+        "-tune", "stillimage",
 
-        await ffmpeg.run('-i', 'audio.webm', '-b:a', '192k', 'output.mp3');
+        "-c:a", "aac",
 
-        const mp3Data = ffmpeg.FS('readFile', 'output.mp3');
+        "-b:a", "192k",
 
+        "-pix_fmt", "yuv420p",
 
+        "-shortest",
 
-        const audioBlobMp3 = new Blob([mp3Data.buffer], { type: 'audio/mp3' });
+        "output.mp4"
 
-        const audioUrlMp3 = URL.createObjectURL(audioBlobMp3);
+    );
 
 
 
-        const audio = new Audio(audioUrlMp3);
+    const videoData = ffmpeg.FS("readFile", "output.mp4");
 
-        const mediaStream = new MediaStream([...videoStream.getTracks()]);
+    const videoBlob = new Blob([videoData.buffer], { type: "video/mp4" });
 
+    const videoUrl = URL.createObjectURL(videoBlob);
 
 
-        const mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'video/mp4' });
 
-        const videoChunks = [];
+    // حفظ الفيديو
 
+    const a = document.createElement('a');
 
+    a.href = videoUrl;
 
-        mediaRecorder.ondataavailable = event => {
+    a.download = 'eid_greeting_card.mp4';
 
-            if (event.data.size > 0) {
+    document.body.appendChild(a);
 
-                videoChunks.push(event.data);
+    a.click();
 
-            }
+    document.body.removeChild(a);
 
-        };
 
 
-
-        mediaRecorder.onstop = async () => {
-
-            const videoBlob = new Blob(videoChunks, { type: 'video/mp4' });
-
-            const finalVideoUrl = URL.createObjectURL(videoBlob);
-
-
-
-            const a = document.createElement('a');
-
-            a.href = finalVideoUrl;
-
-            a.download = 'eid_greeting_card.mp4';
-
-            document.body.appendChild(a);
-
-            a.click();
-
-            document.body.removeChild(a);
-
-            alert("✅ تم حفظ الفيديو مع الصوت بنجاح!");
-
-
-
-            const videoElement = document.createElement('video');
-
-            videoElement.src = finalVideoUrl;
-
-            videoElement.controls = true;
-
-            document.body.appendChild(videoElement);
-
-        };
-
-
-
-        mediaRecorder.start();
-
-        audio.play();
-
-
-
-        audio.onended = () => {
-
-            mediaRecorder.stop();
-
-        };
-
-    };
+    alert("🎉 تم حفظ الفيديو بنجاح!");
 
 });
+
