@@ -6,13 +6,9 @@ let audioBlob;
 
 let audioUrl;
 
-let recordedStream;
-
 
 
 document.getElementById('start-recording').addEventListener('click', async () => {
-
-    audioChunks = []; // تفريغ أي تسجيلات سابقة
 
     try {
 
@@ -24,7 +20,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp3' }); // استخدام MP3 للتوافق مع iPhone
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); // استخدام تنسيق متوافق
 
         mediaRecorder.start();
 
@@ -35,6 +31,8 @@ document.getElementById('start-recording').addEventListener('click', async () =>
         document.getElementById('stop-recording').disabled = false;
 
 
+
+        audioChunks = []; // تفريغ أي تسجيلات سابقة
 
         mediaRecorder.ondataavailable = event => {
 
@@ -80,7 +78,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         console.error("❌ خطأ في تشغيل الميكروفون:", error);
 
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون وإعادة المحاولة.");
+        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
     }
 
@@ -180,7 +178,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         const stream = canvas.captureStream(30); // 30 FPS
 
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/mp4' });
 
         const videoChunks = [];
 
@@ -196,7 +194,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         mediaRecorder.onstop = () => {
 
-            const videoBlob = new Blob(videoChunks, { type: 'video/mp4' }); // حفظ الفيديو بصيغة MP4
+            const videoBlob = new Blob(videoChunks, { type: 'video/mp4' });
 
             const videoUrl = URL.createObjectURL(videoBlob);
 
