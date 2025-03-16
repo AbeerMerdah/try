@@ -151,23 +151,30 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         context.drawImage(image, 0, 0);
 
+        const stream = canvas.captureStream(30);
+        const audio = new Audio(audioUrl);
+        audio.play();
 
-
-        const stream = canvas.captureStream(30); // Capture the canvas stream
-        const audio = new Audio(audioUrl); // Create an audio element for playback
-        const audioContext = new AudioContext();
-        const source = audioContext.createMediaElementSource(audio);
-        const destination = audioContext.createMediaStreamDestination();
-        source.connect(destination);
-        source.connect(audioContext.destination); // Connect to speakers
-        audio.play(); // Play the audio
-
+        const mediaRecorder = new MediaRecorder(stream);
+        const videoChunks = [];
 
         mediaRecorder.ondataavailable = event => {
-
             videoChunks.push(event.data);
-
         };
+
+
+        mediaRecorder.onstop = () => {
+            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+            const videoUrl = URL.createObjectURL(videoBlob);
+            const a = document.createElement('a');
+            a.href = videoUrl;
+            a.download = 'eid_greeting_card.webm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            alert("تم حفظ الفيديو!");
+        };
+
 
 
 
