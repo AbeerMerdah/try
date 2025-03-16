@@ -153,12 +153,14 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-        const stream = canvas.captureStream(30);
-
-        const mediaRecorder = new MediaRecorder(stream);
-
-        const videoChunks = [];
-
+        const stream = canvas.captureStream(30); // Capture the canvas stream
+        const audio = new Audio(audioUrl); // Create an audio element for playback
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(audio);
+        const destination = audioContext.createMediaStreamDestination();
+        source.connect(destination);
+        source.connect(audioContext.destination); // Connect to speakers
+        audio.play(); // Play the audio
 
 
         mediaRecorder.ondataavailable = event => {
@@ -197,9 +199,9 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
         
 
-        const audio = new Audio(audioUrl);
+       // const audio = new Audio(audioUrl);
 
-        audio.play();
+       // audio.play();
 
 
 
