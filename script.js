@@ -10,19 +10,15 @@ let audioUrl;
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
-    audioChunks = [];
-
     try {
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorder = new MediaRecorder(stream);
 
         mediaRecorder.start();
 
-
+        
 
         document.getElementById('start-recording').disabled = true;
 
@@ -32,11 +28,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.ondataavailable = event => {
 
-            if (event.data.size > 0) {
-
-                audioChunks.push(event.data);
-
-            }
+            audioChunks.push(event.data);
 
         };
 
@@ -44,25 +36,16 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-            
-
             const audioElement = document.getElementById('audio');
-
             audioElement.src = audioUrl;
-
             audioElement.style.display = 'block';
-
             audioElement.controls = true;
 
-
-
-            document.getElementById('preview-audio').src = audioUrl;
-
-            document.getElementById('preview-audio').style.display = 'block';
+            audioChunks = [];
 
         };
 
@@ -136,7 +119,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 
 
-document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
+document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
@@ -148,87 +131,81 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    // تحويل الصوت إلى MP3 ليكون متوافقًا
+    const video = document.createElement('video');
 
-    const audioFile = new File([audioBlob], "audio.mp3", { type: "audio/mpeg" });
+    const canvas = document.createElement('canvas');
 
-    const audioUrl = URL.createObjectURL(audioFile);
+    const context = canvas.getContext('2d');
 
+    const image = new Image();
 
+    
 
-    // تحميل FFmpeg.js لمعالجة الفيديو
+    image.src = document.getElementById('preview-image').src;
 
-    const { createFFmpeg, fetchFile } = FFmpeg;
+    image.onload = () => {
 
-    const ffmpeg = createFFmpeg({ log: true });
+        canvas.width = image.width;
 
+        canvas.height = image.height;
 
-
-    await ffmpeg.load();
-
-
-
-    // رفع الملفات إلى FFmpeg
-
-    ffmpeg.FS("writeFile", "image.png", await fetchFile(document.getElementById("preview-image").src));
-
-    ffmpeg.FS("writeFile", "audio.mp3", await fetchFile(audioUrl));
+        context.drawImage(image, 0, 0);
 
 
 
-    // إنشاء الفيديو
+       
+        const stream = canvas.captureStream(30); // Capture the canvas stream
+        const audio = new Audio(audioUrl); // Create an audio element for playback
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(audio);
+        const destination = audioContext.createMediaStreamDestination();
+        source.connect(destination);
+        source.connect(audioContext.destination); // Connect to speakers
+        audio.play(); // Play the audio
 
-    await ffmpeg.run(
+        const mediaRecorder = new MediaRecorder(stream);
+        const videoChunks = [];
 
-        "-loop", "1",
+        mediaRecorder.ondataavailable = event => {
 
-        "-i", "image.png",
+            videoChunks.push(event.data);
 
-        "-i", "audio.mp3",
-
-        "-c:v", "libx264",
-
-        "-tune", "stillimage",
-
-        "-c:a", "aac",
-
-        "-b:a", "192k",
-
-        "-pix_fmt", "yuv420p",
-
-        "-shortest",
-
-        "output.mp4"
-
-    );
+        };
 
 
 
-    const videoData = ffmpeg.FS("readFile", "output.mp4");
+        mediaRecorder.onstop = () => {
 
-    const videoBlob = new Blob([videoData.buffer], { type: "video/mp4" });
+            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-    const videoUrl = URL.createObjectURL(videoBlob);
+            const videoUrl = URL.createObjectURL(videoBlob);
 
+            const a = document.createElement('a');
 
+            a.href = videoUrl;
 
-    // حفظ الفيديو
+            a.download = 'eid_greeting_card.webm';
 
-    const a = document.createElement('a');
+            document.body.appendChild(a);
 
-    a.href = videoUrl;
+            a.click();
 
-    a.download = 'eid_greeting_card.mp4';
+            document.body.removeChild(a);
 
-    document.body.appendChild(a);
+            alert("تم حفظ الفيديو!");
 
-    a.click();
+        };
 
-    document.body.removeChild(a);
+        mediaRecorder.start();
 
+        
 
+        audio.onended = () => {
 
-    alert("🎉 تم حفظ الفيديو بنجاح!");
+            mediaRecorder.stop();
+
+        };
+
+    };
 
 });
-
