@@ -8,17 +8,17 @@ let audioUrl;
 
 let recordedAudio = null;
 
+let isAudioPlaying = false; // متغير لمنع تكرار الصوت
 
 
-// 🟢 بدء التسجيل
+
+// ⏺️ بدء التسجيل
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-
 
         mediaRecorder = new MediaRecorder(stream);
 
@@ -61,6 +61,8 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
             recordedAudio = new Audio(audioUrl);
+
+            isAudioPlaying = false; // إعادة تعيين متغير التشغيل
 
         };
 
@@ -192,13 +194,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-
-
-            // **دمج الصوت مع الفيديو باستخدام FFmpeg.js**
-
-            const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
-
-            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
+            const finalVideoUrl = URL.createObjectURL(videoBlob);
 
 
 
@@ -216,55 +212,31 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             document.body.removeChild(a);
 
+
+
             alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
 
         };
 
 
 
-        mediaRecorder.start();
+        if (!isAudioPlaying) {
 
-        recordedAudio.play();
+            isAudioPlaying = true;
 
+            recordedAudio.play();
 
+            recordedAudio.onended = () => {
 
-        recordedAudio.onended = () => {
+                mediaRecorder.stop();
 
-            mediaRecorder.stop();
+                isAudioPlaying = false;
 
-        };
+            };
+
+        }
 
     };
 
 });
-
-
-
-// **🛠️ دمج الصوت مع الفيديو باستخدام FFmpeg.js**
-
-async function mergeAudioWithVideo(videoBlob, audioBlob) {
-
-    const { createFFmpeg, fetchFile } = FFmpeg;
-
-    const ffmpeg = createFFmpeg({ log: true });
-
-
-
-    await ffmpeg.load();
-
-    ffmpeg.FS('writeFile', 'video.webm', await fetchFile(videoBlob));
-
-    ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audioBlob));
-
-
-
-    await ffmpeg.run('-i', 'video.webm', '-i', 'audio.mp3', '-c:v', 'copy', '-c:a', 'aac', 'output.mp4');
-
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-
-
-
-    return new Blob([data.buffer], { type: 'video/mp4' });
-
-}
 
