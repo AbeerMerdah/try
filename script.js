@@ -12,6 +12,8 @@ let isRecording = false; // لمنع تكرار التسجيل
 
 let isAudioPlaying = false; // لمنع تكرار تشغيل الصوت
 
+let isSaving = false; // لمنع حفظ الفيديو أكثر من مرة
+
 
 
 // ⏺️ **بدء التسجيل**
@@ -70,9 +72,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             recordedAudio = new Audio(audioUrl);
 
-            isRecording = false; // إعادة تمكين التسجيل بعد الانتهاء
-
-            isAudioPlaying = false;
+            isRecording = false;
 
         };
 
@@ -82,7 +82,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
-        isRecording = false; // إعادة تمكين التسجيل إذا فشل
+        isRecording = false;
 
     }
 
@@ -168,6 +168,12 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
+    if (isSaving) return; // منع الحفظ المتكرر
+
+    isSaving = true;
+
+
+
     const canvas = document.createElement('canvas');
 
     const context = canvas.getContext('2d');
@@ -230,6 +236,8 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
 
+            isSaving = false; // السماح بحفظ فيديو جديد
+
         };
 
 
@@ -238,7 +246,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             isAudioPlaying = true;
 
+            recordedAudio.currentTime = 0; // بدء الصوت من البداية
+
             recordedAudio.play();
+
+
 
             recordedAudio.onended = () => {
 
@@ -253,3 +265,4 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     };
 
 });
+
