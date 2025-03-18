@@ -10,7 +10,7 @@ let recordedAudio = null;
 
 
 
-// ⏺️ بدء التسجيل
+// 🟢 بدء التسجيل
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
@@ -18,7 +18,9 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+
+        mediaRecorder = new MediaRecorder(stream);
 
         audioChunks = [];
 
@@ -42,7 +44,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -64,7 +66,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     } catch (error) {
 
-        console.error("⚠️ خطأ في الميكروفون:", error);
+        console.error("خطأ في تشغيل المايكروفون:", error);
 
         alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
@@ -128,7 +130,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("📌 يرجى تحميل صورة أولًا.");
+        alert("❌ يرجى تحميل صورة.");
 
     }
 
@@ -170,85 +172,99 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        const videoStream = canvas.captureStream(30);
+        const stream = canvas.captureStream(30);
 
-        const audioStream = new MediaStream();
+        const mediaRecorder = new MediaRecorder(stream);
 
-        const audioContext = new AudioContext();
-
-        const source = audioContext.createMediaElementSource(recordedAudio);
-
-        const destination = audioContext.createMediaStreamDestination();
+        const videoChunks = [];
 
 
 
-        source.connect(destination);
+        mediaRecorder.ondataavailable = event => {
 
-        source.connect(audioContext.destination);
+            videoChunks.push(event.data);
+
+        };
+
+
+
+        mediaRecorder.onstop = async () => {
+
+            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+
+
+
+            // **دمج الصوت مع الفيديو باستخدام FFmpeg.js**
+
+            const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
+
+            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
+
+
+
+            // تحميل الفيديو
+
+            const a = document.createElement('a');
+
+            a.href = finalVideoUrl;
+
+            a.download = 'eid_greeting_card.mp4';
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+
+            alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
+
+        };
+
+
+
+        mediaRecorder.start();
 
         recordedAudio.play();
 
 
 
-        recordedAudio.onended = async () => {
+        recordedAudio.onended = () => {
 
-            audioStream.addTrack(destination.stream.getAudioTracks()[0]);
-
-
-
-            const combinedStream = new MediaStream([...videoStream.getTracks(), ...audioStream.getTracks()]);
-
-            const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
-
-
-
-            const videoChunks = [];
-
-
-
-            mediaRecorder.ondataavailable = event => {
-
-                videoChunks.push(event.data);
-
-            };
-
-
-
-            mediaRecorder.onstop = async () => {
-
-                const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-
-                const finalVideoUrl = URL.createObjectURL(videoBlob);
-
-
-
-                // تحميل الفيديو
-
-                const a = document.createElement('a');
-
-                a.href = finalVideoUrl;
-
-                a.download = 'eid_greeting_card.webm';
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-                alert("✅ تم حفظ الفيديو مع الصوت بنجاح!");
-
-            };
-
-
-
-            mediaRecorder.start();
-
-            setTimeout(() => mediaRecorder.stop(), recordedAudio.duration * 1000);
+            mediaRecorder.stop();
 
         };
 
     };
 
 });
+
+
+
+// **🛠️ دمج الصوت مع الفيديو باستخدام FFmpeg.js**
+
+async function mergeAudioWithVideo(videoBlob, audioBlob) {
+
+    const { createFFmpeg, fetchFile } = FFmpeg;
+
+    const ffmpeg = createFFmpeg({ log: true });
+
+
+
+    await ffmpeg.load();
+
+    ffmpeg.FS('writeFile', 'video.webm', await fetchFile(videoBlob));
+
+    ffmpeg.FS('writeFile', 'audio.mp3', await fetchFile(audioBlob));
+
+
+
+    await ffmpeg.run('-i', 'video.webm', '-i', 'audio.mp3', '-c:v', 'copy', '-c:a', 'aac', 'output.mp4');
+
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+
+
+
+    return new Blob([data.buffer], { type: 'video/mp4' });
+
+}
 
