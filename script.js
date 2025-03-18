@@ -38,15 +38,14 @@ document.getElementById('start-recording').addEventListener('click', async () =>
             audioElement.src = audioUrl;
             audioElement.style.display = 'block';
             audioElement.controls = true;
-            recordedAudio = new Audio(audioUrl);
         };
     } catch (error) {
         console.error("Error accessing microphone:", error);
-        alert("Please allow access to the microphone in your device settings.");
+        alert("Please allow access to the microphone.");
     }
 });
 
-// ⏹️ Stop Recording
+// Stop Recording
 document.getElementById('stop-recording').addEventListener('click', () => {
     if (mediaRecorder) {
         mediaRecorder.stop();
@@ -55,7 +54,7 @@ document.getElementById('stop-recording').addEventListener('click', () => {
     document.getElementById('stop-recording').disabled = true;
 });
 
-// 📷 Upload Image
+// Upload Image
 document.getElementById('upload-image').addEventListener('click', () => {
     const imageInput = document.getElementById('image-upload');
     const previewImage = document.getElementById('preview-image');
@@ -77,7 +76,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
     }
 });
 
-// 🎥 Save Video with Audio
+// Save Video with Audio
 document.getElementById('save-to-camera-roll').addEventListener('click', () => {
     if (!audioBlob || !document.getElementById('preview-image').src) {
         alert("Please record audio and upload an image first.");
