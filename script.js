@@ -8,6 +8,8 @@ let audioUrl;
 
 let recordedAudio = null;
 
+let videoBlob;
+
 
 
 // ⏺️ بدء التسجيل
@@ -18,7 +20,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
 
         audioChunks = [];
 
@@ -42,11 +44,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/mp4' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-            
+
 
             const audioElement = document.getElementById('audio');
 
@@ -190,7 +192,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         videoRecorder.onstop = async () => {
 
-            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+            videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+
+
+
+            // **🛠️ استخدام FFmpeg.js لدمج الصوت مع الفيديو**
 
             const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
 
@@ -204,7 +210,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             a.href = finalVideoUrl;
 
-            a.download = 'eid_greeting_card.webm';
+            a.download = 'eid_greeting_card.mp4';
 
             document.body.appendChild(a);
 
@@ -236,56 +242,51 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-// **🛠️ دمج الصوت مع الفيديو**
+// **🛠️ دمج الصوت مع الفيديو باستخدام FFmpeg.js**
 
 async function mergeAudioWithVideo(videoBlob, audioBlob) {
 
     return new Promise(resolve => {
 
-        const audioContext = new AudioContext();
+        const worker = new Worker('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js');
 
-        const videoSource = audioContext.createMediaElementSource(new Audio(URL.createObjectURL(videoBlob)));
+        
 
-        const audioSource = audioContext.createMediaElementSource(new Audio(URL.createObjectURL(audioBlob)));
+        worker.onmessage = (event) => {
 
+            if (event.data.type === 'done') {
 
+                resolve(new Blob([event.data.data], { type: 'video/mp4' }));
 
-        const destination = audioContext.createMediaStreamDestination();
-
-        videoSource.connect(destination);
-
-        audioSource.connect(destination);
-
-
-
-        const combinedStream = destination.stream;
-
-        const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
-
-        const finalChunks = [];
-
-
-
-        mediaRecorder.ondataavailable = event => {
-
-            finalChunks.push(event.data);
+            }
 
         };
 
 
 
-        mediaRecorder.onstop = () => {
+        worker.postMessage({
 
-            resolve(new Blob(finalChunks, { type: 'video/webm' }));
+            type: 'run',
 
-        };
+            arguments: [
 
+                '-i', URL.createObjectURL(videoBlob),
 
+                '-i', URL.createObjectURL(audioBlob),
 
-        mediaRecorder.start();
+                '-c:v', 'copy',
 
-        setTimeout(() => mediaRecorder.stop(), 5000); // طول التسجيل
+                '-c:a', 'aac',
+
+                '-strict', 'experimental',
+
+                'output.mp4'
+
+            ]
+
+        });
 
     });
 
 }
+
