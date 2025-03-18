@@ -8,23 +8,13 @@ let audioUrl;
 
 let recordedAudio = null;
 
-let isRecording = false; // منع تكرار التسجيل أثناء التسجيل
-
-let isSaving = false; // منع الحفظ المتكرر
 
 
-
-// ⏺️ **بدء التسجيل**
+// ⏺️ بدء التسجيل
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
-
-        if (isRecording) return; // منع التشغيل المتكرر
-
-        isRecording = true;
-
-
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -52,11 +42,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // استخدام تنسيق متوافق
 
             audioUrl = URL.createObjectURL(audioBlob);
 
-
+            
 
             const audioElement = document.getElementById('audio');
 
@@ -70,17 +60,13 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             recordedAudio = new Audio(audioUrl);
 
-            isRecording = false;
-
         };
 
     } catch (error) {
 
-        console.error("❌ خطأ في تشغيل الميكروفون:", error);
+        console.error("🎤 خطأ في الميكروفون:", error);
 
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
-
-        isRecording = false;
+        alert("يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
     }
 
@@ -88,15 +74,13 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-// ⏹️ **إيقاف التسجيل**
+// ⏹️ إيقاف التسجيل
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
-    if (mediaRecorder && isRecording) {
+    if (mediaRecorder) {
 
         mediaRecorder.stop();
-
-        isRecording = false;
 
     }
 
@@ -108,9 +92,9 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
 
 
-// 📷 **تحميل الصورة**
+// 📷 تحميل الصورة
 
-document.getElementById('upload-image').addEventListener('click', () => {
+document.getElementById('upload-image').addEventListener('change', () => {
 
     const imageInput = document.getElementById('image-upload');
 
@@ -144,7 +128,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("❌ يرجى تحميل صورة.");
+        alert("يرجى تحميل صورة.");
 
     }
 
@@ -152,23 +136,17 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 
 
-// 🎥 **حفظ الفيديو مع الصوت**
+// 🎥 حفظ الفيديو مع الصوت
 
 document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("❌ يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
     }
-
-
-
-    if (isSaving) return; // منع الحفظ المتكرر
-
-    isSaving = true;
 
 
 
@@ -178,7 +156,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
     const image = new Image();
 
-
+    
 
     image.src = document.getElementById('preview-image').src;
 
@@ -192,15 +170,17 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
+        // تحويل الصورة إلى فيديو
+
         const stream = canvas.captureStream(30);
 
-        const videoRecorder = new MediaRecorder(stream);
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
         const videoChunks = [];
 
 
 
-        videoRecorder.ondataavailable = event => {
+        mediaRecorder.ondataavailable = event => {
 
             videoChunks.push(event.data);
 
@@ -208,27 +188,23 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        videoRecorder.onstop = async () => {
+        mediaRecorder.onstop = async () => {
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-
-
-            // ✅ **تحويل WebM إلى MP4**
-
-            const finalVideoBlob = await convertWebMToMP4(videoBlob, audioBlob);
+            const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
 
             const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
-            // 📥 **تحميل الفيديو**
+            // تحميل الفيديو
 
             const a = document.createElement('a');
 
             a.href = finalVideoUrl;
 
-            a.download = 'eid_greeting_card.mp4';
+            a.download = 'eid_greeting_card.webm';
 
             document.body.appendChild(a);
 
@@ -236,31 +212,23 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             document.body.removeChild(a);
 
-
-
             alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
-
-            isSaving = false;
 
         };
 
 
 
-        // 🎵 **تشغيل الصوت أثناء التسجيل**
-
-        recordedAudio.currentTime = 0;
+        mediaRecorder.start();
 
         recordedAudio.play();
 
+
+
         recordedAudio.onended = () => {
 
-            videoRecorder.stop();
+            mediaRecorder.stop();
 
         };
-
-
-
-        videoRecorder.start();
 
     };
 
@@ -268,47 +236,55 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-// 🔄 **تحويل WebM إلى MP4 مع الصوت**
+// **🛠️ دمج الصوت مع الفيديو**
 
-async function convertWebMToMP4(videoBlob, audioBlob) {
+async function mergeAudioWithVideo(videoBlob, audioBlob) {
 
     return new Promise(resolve => {
 
-        const videoReader = new FileReader();
+        const audioContext = new AudioContext();
 
-        const audioReader = new FileReader();
+        const videoSource = audioContext.createMediaElementSource(new Audio(URL.createObjectURL(videoBlob)));
 
-
-
-        videoReader.readAsArrayBuffer(videoBlob);
-
-        audioReader.readAsArrayBuffer(audioBlob);
+        const audioSource = audioContext.createMediaElementSource(new Audio(URL.createObjectURL(audioBlob)));
 
 
 
-        videoReader.onload = () => {
+        const destination = audioContext.createMediaStreamDestination();
 
-            audioReader.onload = () => {
+        videoSource.connect(destination);
 
-                const videoBuffer = new Uint8Array(videoReader.result);
-
-                const audioBuffer = new Uint8Array(audioReader.result);
+        audioSource.connect(destination);
 
 
 
-                const combinedBuffer = new Uint8Array(videoBuffer.length + audioBuffer.length);
+        const combinedStream = destination.stream;
 
-                combinedBuffer.set(videoBuffer, 0);
+        const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm' });
 
-                combinedBuffer.set(audioBuffer, videoBuffer.length);
+        const finalChunks = [];
 
 
 
-                resolve(new Blob([combinedBuffer], { type: 'video/mp4' }));
+        mediaRecorder.ondataavailable = event => {
 
-            };
+            finalChunks.push(event.data);
 
         };
+
+
+
+        mediaRecorder.onstop = () => {
+
+            resolve(new Blob(finalChunks, { type: 'video/webm' }));
+
+        };
+
+
+
+        mediaRecorder.start();
+
+        setTimeout(() => mediaRecorder.stop(), 5000); // طول التسجيل
 
     });
 
