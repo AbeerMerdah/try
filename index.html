@@ -8,53 +8,63 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>تهنئة العيد</title>
+    <title>بطاقة تهنئة العيد</title>
+
+    <link rel="stylesheet" href="style.css">
 
 </head>
 
 <body>
 
+    <div class="container">
 
+        <h1>كل عام وأنتم بخير</h1>
 
-    <h1>كل عام وأنتم بخير</h1>
+        <h2>عيدكم مبارك</h2>
 
-    <h3>عيدكم مبارك</h3>
-
-
-
-    <!-- 🎤 تسجيل الصوت -->
-
-    <button id="start-recording">🎤 تسجيل صوت التهنئة</button>
-
-    <button id="stop-recording" disabled>🛑 إيقاف التسجيل</button>
-
-    <br>
-
-    <audio id="audio" style="display:none;"></audio>
+        <h3>إنشاء بطاقة تهنئة العيد</h3>
 
 
 
-    <!-- 📷 تحميل الصورة -->
+        <div class="recording-section">
 
-    <br>
+            <button id="start-recording" class="record-btn">🎤 تسجيل صوت التهنئة</button>
 
-    <input type="file" id="image-upload" accept="image/*">
+            <button id="stop-recording" class="stop-btn" disabled>🛑 إيقاف التسجيل</button>
 
-    <br>
+            <audio id="audio" controls style="display:none;"></audio>
 
-    <img id="preview-image" style="display:none; width:200px; height:auto;">
-
-
-
-    <!-- 💾 زر الحفظ -->
-
-    <br>
-
-    <button id="save-to-camera-roll" disabled>📥 حفظ الفيديو</button>
+        </div>
 
 
 
-    <script src="script.js"></script> <!-- رابط لملف الجافا سكريبت -->
+        <div class="upload-section">
+
+            <input type="file" id="image-upload" accept="image/*">
+
+            <button id="upload-image" class="upload-btn">📸 تحميل الصورة</button>
+
+        </div>
+
+
+
+        <div class="preview-section">
+
+            <img id="preview-image" src="" alt="Preview" style="display:none;">
+
+            <audio id="preview-audio" controls style="display:none;"></audio>
+
+        </div>
+
+
+
+        <button id="save-to-camera-roll" class="save-btn" style="display:none;">🎬 حفظ التهنئة كفيديو</button>
+
+    </div>
+
+
+
+    <script src="script.js"></script>
 
 </body>
 
