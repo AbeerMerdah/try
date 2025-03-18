@@ -60,6 +60,8 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             recordedAudio = new Audio(audioUrl);
 
+            document.getElementById('save-to-camera-roll').disabled = false; // تمكين زر الحفظ
+
         };
 
     } catch (error) {
