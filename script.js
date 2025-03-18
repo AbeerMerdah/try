@@ -1,3 +1,5 @@
+أنا
+
 let mediaRecorder;
 
 let audioChunks = [];
@@ -8,7 +10,9 @@ let audioUrl;
 
 let recordedAudio = null;
 
-let isAudioPlaying = false; // متغير لمنع تكرار الصوت
+let isRecording = false; // لمنع تسجيل صوت جديد أثناء التسجيل
+
+let isAudioPlaying = false; // لمنع تكرار الصوت
 
 
 
@@ -17,6 +21,12 @@ let isAudioPlaying = false; // متغير لمنع تكرار الصوت
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
+
+        if (isRecording) return; // منع بدء تسجيل جديد أثناء التسجيل
+
+        isRecording = true;
+
+        
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -62,7 +72,9 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             recordedAudio = new Audio(audioUrl);
 
-            isAudioPlaying = false; // إعادة تعيين متغير التشغيل
+            isRecording = false; // إعادة تعيين حالة التسجيل
+
+            isAudioPlaying = false; // إعادة تعيين حالة التشغيل
 
         };
 
