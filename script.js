@@ -22,269 +22,111 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         audioChunks = [];
 
-        
-
+     
         mediaRecorder.start();
-
         document.getElementById('start-recording').disabled = true;
-
         document.getElementById('stop-recording').disabled = false;
 
-
-
         mediaRecorder.ondataavailable = event => {
-
             audioChunks.push(event.data);
-
         };
-
-
 
         mediaRecorder.onstop = () => {
-
-            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-
+            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             audioUrl = URL.createObjectURL(audioBlob);
-
-            
-
             const audioElement = document.getElementById('audio');
-
             audioElement.src = audioUrl;
-
             audioElement.style.display = 'block';
-
             audioElement.controls = true;
-
-
-
             recordedAudio = new Audio(audioUrl);
-
         };
-
     } catch (error) {
-
-        console.error("حدث خطأ في الميكروفون:", error);
-
-        alert("يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
-
+        console.error("Error accessing microphone:", error);
+        alert("Please allow access to the microphone in your device settings.");
     }
-
 });
 
-
-
-// ⏹️ إيقاف التسجيل
-
+// ⏹️ Stop Recording
 document.getElementById('stop-recording').addEventListener('click', () => {
-
     if (mediaRecorder) {
-
         mediaRecorder.stop();
-
     }
-
     document.getElementById('start-recording').disabled = false;
-
     document.getElementById('stop-recording').disabled = true;
-
 });
 
-
-
-// 📷 تحميل الصورة
-
+// 📷 Upload Image
 document.getElementById('upload-image').addEventListener('click', () => {
-
     const imageInput = document.getElementById('image-upload');
-
     const previewImage = document.getElementById('preview-image');
-
     const saveButton = document.getElementById('save-to-camera-roll');
 
-
-
     if (imageInput.files.length > 0) {
-
         const file = imageInput.files[0];
-
         const reader = new FileReader();
 
-
-
         reader.onload = function(event) {
-
             previewImage.src = event.target.result;
-
             previewImage.style.display = 'block';
-
             saveButton.style.display = 'block';
-
         };
-
-
 
         reader.readAsDataURL(file);
-
     } else {
-
-        alert("يرجى تحميل صورة.");
-
+        alert("Please upload an image.");
     }
-
 });
 
-
-
-// 🎥 حفظ الفيديو مع الصوت
-
+// 🎥 Save Video with Audio
 document.getElementById('save-to-camera-roll').addEventListener('click', () => {
-
     if (!audioBlob || !document.getElementById('preview-image').src) {
-
-        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
-
+        alert("Please record audio and upload an image first.");
         return;
-
     }
-
-
 
     const canvas = document.createElement('canvas');
-
     const context = canvas.getContext('2d');
-
     const image = new Image();
 
-    
-
     image.src = document.getElementById('preview-image').src;
-
     image.onload = async () => {
-
         canvas.width = image.width;
-
         canvas.height = image.height;
-
         context.drawImage(image, 0, 0);
 
-
-
-        // تحويل الـ canvas إلى فيديو
-
+        // Capture the canvas stream
         const stream = canvas.captureStream(30);
+        const audio = new Audio(audioUrl);
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(audio);
+        const destination = audioContext.createMediaStreamDestination();
+        source.connect(destination);
+        source.connect(audioContext.destination); // Connect to speakers
 
-        const mediaRecorder = new MediaRecorder(stream);
-
+        const videoRecorder = new MediaRecorder(stream);
         const videoChunks = [];
 
-
-
-        mediaRecorder.ondataavailable = event => {
-
+        videoRecorder.ondataavailable = event => {
             videoChunks.push(event.data);
-
         };
 
-
-
-        mediaRecorder.onstop = async () => {
-
+        videoRecorder.onstop = () => {
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-
-            const videoFile = new File([videoBlob], "eid_greeting_card.webm", { type: "video/webm" });
-
-
-
-            // **🎵 دمج الصوت مع الفيديو**
-
-            const finalVideoBlob = await mergeAudioWithVideo(videoFile, audioBlob);
-
-            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
-
-
-
-            // تحميل الفيديو
-
+            const videoUrl = URL.createObjectURL(videoBlob);
             const a = document.createElement('a');
-
-            a.href = finalVideoUrl;
-
-            a.download = 'eid_greeting_card.mp4';
-
+            a.href = videoUrl;
+            a.download = 'eid_greeting_card.webm';
             document.body.appendChild(a);
-
             a.click();
-
             document.body.removeChild(a);
-
-            alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
-
+            alert("Video saved successfully!");
         };
 
+        videoRecorder.start();
+        audio.play();
 
-
-        mediaRecorder.start();
-
-        recordedAudio.play();
-
-
-
-        recordedAudio.onended = () => {
-
-            mediaRecorder.stop();
-
+        audio.onended = () => {
+            videoRecorder.stop();
         };
-
     };
-
 });
-
-
-
-// **🛠️ دمج الصوت مع الفيديو**
-
-async function mergeAudioWithVideo(videoFile, audioBlob) {
-
-    return new Promise(resolve => {
-
-        const reader1 = new FileReader();
-
-        const reader2 = new FileReader();
-
-
-
-        reader1.readAsArrayBuffer(videoFile);
-
-        reader2.readAsArrayBuffer(audioBlob);
-
-
-
-        reader1.onload = () => {
-
-            reader2.onload = () => {
-
-                const videoBuffer = new Uint8Array(reader1.result);
-
-                const audioBuffer = new Uint8Array(reader2.result);
-
-
-
-                const combinedBuffer = new Uint8Array(videoBuffer.length + audioBuffer.length);
-
-                combinedBuffer.set(videoBuffer, 0);
-
-                combinedBuffer.set(audioBuffer, videoBuffer.length);
-
-
-
-                resolve(new Blob([combinedBuffer], { type: 'video/mp4' }));
-
-            };
-
-        };
-
-    });
-
-}
-
