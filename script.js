@@ -68,7 +68,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // استخدام webm لدعم أوسع
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -194,7 +194,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        // تحويل الصورة إلى فيديو
+        // ✅ تحويل الصورة إلى فيديو
 
         const stream = canvas.captureStream(30);
 
@@ -268,7 +268,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 async function mergeAudioWithVideo(videoBlob, audioBlob) {
 
-    return new Blob([videoBlob, audioBlob], { type: 'video/mp4' });
+    return new Blob([videoBlob, audioBlob], { type: 'video/webm' });
 
 }
 
