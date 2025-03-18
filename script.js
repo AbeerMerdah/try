@@ -20,7 +20,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
 
         audioChunks = [];
 
@@ -44,7 +44,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/mp4' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -196,7 +196,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-            // **🛠️ استخدام FFmpeg.js لدمج الصوت مع الفيديو**
+            // **🎵 دمج الصوت مع الفيديو**
 
             const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
 
@@ -242,49 +242,47 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-// **🛠️ دمج الصوت مع الفيديو باستخدام FFmpeg.js**
+// **🛠️ دمج الصوت مع الفيديو**
 
 async function mergeAudioWithVideo(videoBlob, audioBlob) {
 
     return new Promise(resolve => {
 
-        const worker = new Worker('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.0/dist/ffmpeg.min.js');
+        const reader1 = new FileReader();
 
-        
+        const reader2 = new FileReader();
 
-        worker.onmessage = (event) => {
 
-            if (event.data.type === 'done') {
 
-                resolve(new Blob([event.data.data], { type: 'video/mp4' }));
+        reader1.readAsArrayBuffer(videoBlob);
 
-            }
+        reader2.readAsArrayBuffer(audioBlob);
+
+
+
+        reader1.onload = () => {
+
+            reader2.onload = () => {
+
+                const videoBuffer = new Uint8Array(reader1.result);
+
+                const audioBuffer = new Uint8Array(reader2.result);
+
+
+
+                const combinedBuffer = new Uint8Array(videoBuffer.length + audioBuffer.length);
+
+                combinedBuffer.set(videoBuffer, 0);
+
+                combinedBuffer.set(audioBuffer, videoBuffer.length);
+
+
+
+                resolve(new Blob([combinedBuffer], { type: 'video/mp4' }));
+
+            };
 
         };
-
-
-
-        worker.postMessage({
-
-            type: 'run',
-
-            arguments: [
-
-                '-i', URL.createObjectURL(videoBlob),
-
-                '-i', URL.createObjectURL(audioBlob),
-
-                '-c:v', 'copy',
-
-                '-c:a', 'aac',
-
-                '-strict', 'experimental',
-
-                'output.mp4'
-
-            ]
-
-        });
 
     });
 
