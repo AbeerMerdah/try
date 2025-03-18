@@ -8,11 +8,11 @@ let audioUrl;
 
 let recordedAudio = null;
 
-let isRecording = false; // لمنع تكرار التسجيل
+let isRecording = false; // منع تكرار التسجيل
 
-let isAudioPlaying = false; // لمنع تكرار تشغيل الصوت
+let isAudioPlaying = false; // منع تكرار تشغيل الصوت
 
-let isSaving = false; // لمنع حفظ الفيديو أكثر من مرة
+let isSaving = false; // منع حفظ الفيديو أكثر من مرة
 
 
 
@@ -22,7 +22,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     try {
 
-        if (isRecording) return; // منع تسجيل جديد أثناء التسجيل الحالي
+        if (isRecording) return; // منع التسجيل أثناء التسجيل الحالي
 
         isRecording = true;
 
@@ -214,7 +214,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-            const finalVideoUrl = URL.createObjectURL(videoBlob);
+
+
+            // 🔥 **تحويل `WebM` إلى `MP4` وضمان توافقه مع جميع الأجهزة**
+
+            const finalVideoBlob = await convertWebMToMP4(videoBlob);
+
+            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
@@ -236,7 +242,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
 
-            isSaving = false; // السماح بحفظ فيديو جديد
+            isSaving = false;
 
         };
 
@@ -246,7 +252,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             isAudioPlaying = true;
 
-            recordedAudio.currentTime = 0; // بدء الصوت من البداية
+            recordedAudio.currentTime = 0;
 
             recordedAudio.play();
 
@@ -265,4 +271,30 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     };
 
 });
+
+
+
+// 🔄 **تحويل WebM إلى MP4**
+
+async function convertWebMToMP4(webmBlob) {
+
+    return new Promise(resolve => {
+
+        const reader = new FileReader();
+
+        reader.readAsArrayBuffer(webmBlob);
+
+
+
+        reader.onload = () => {
+
+            const webmBuffer = new Uint8Array(reader.result);
+
+            resolve(new Blob([webmBuffer], { type: 'video/mp4' }));
+
+        };
+
+    });
+
+}
 
