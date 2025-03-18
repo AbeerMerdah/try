@@ -1,3 +1,5 @@
+أنا
+
 let mediaRecorder;
 
 let audioChunks = [];
@@ -10,8 +12,6 @@ let recordedAudio = null;
 
 let isRecording = false; // منع تكرار التسجيل
 
-let isAudioPlaying = false; // منع تكرار تشغيل الصوت
-
 let isSaving = false; // منع حفظ الفيديو أكثر من مرة
 
 
@@ -22,7 +22,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     try {
 
-        if (isRecording) return; // منع التسجيل أثناء التسجيل الحالي
+        if (isRecording) return; // منع تكرار التسجيل أثناء تسجيل آخر
 
         isRecording = true;
 
@@ -54,7 +54,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -196,13 +196,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         const stream = canvas.captureStream(30);
 
-        const mediaRecorder = new MediaRecorder(stream);
+        const videoRecorder = new MediaRecorder(stream);
 
         const videoChunks = [];
 
 
 
-        mediaRecorder.ondataavailable = event => {
+        videoRecorder.ondataavailable = event => {
 
             videoChunks.push(event.data);
 
@@ -210,21 +210,21 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        mediaRecorder.onstop = async () => {
+        videoRecorder.onstop = async () => {
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
 
 
-            // 🔥 **تحويل `WebM` إلى `MP4` وضمان توافقه مع جميع الأجهزة**
+            // ✅ **تحويل WebM إلى MP4**
 
-            const finalVideoBlob = await convertWebMToMP4(videoBlob);
+            const finalVideoBlob = await convertWebMToMP4(videoBlob, audioBlob);
 
             const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
-            // تحميل الفيديو
+            // 📥 **تحميل الفيديو**
 
             const a = document.createElement('a');
 
@@ -248,25 +248,21 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        if (!isAudioPlaying) {
+        // 🎵 **تشغيل الصوت أثناء التسجيل**
 
-            isAudioPlaying = true;
+        recordedAudio.currentTime = 0;
 
-            recordedAudio.currentTime = 0;
+        recordedAudio.play();
 
-            recordedAudio.play();
+        recordedAudio.onended = () => {
+
+            videoRecorder.stop();
+
+        };
 
 
 
-            recordedAudio.onended = () => {
-
-                mediaRecorder.stop();
-
-                isAudioPlaying = false;
-
-            };
-
-        }
+        videoRecorder.start();
 
     };
 
@@ -274,23 +270,45 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-// 🔄 **تحويل WebM إلى MP4**
+// 🔄 **تحويل WebM إلى MP4 مع الصوت**
 
-async function convertWebMToMP4(webmBlob) {
+async function convertWebMToMP4(videoBlob, audioBlob) {
 
     return new Promise(resolve => {
 
-        const reader = new FileReader();
+        const videoReader = new FileReader();
 
-        reader.readAsArrayBuffer(webmBlob);
+        const audioReader = new FileReader();
 
 
 
-        reader.onload = () => {
+        videoReader.readAsArrayBuffer(videoBlob);
 
-            const webmBuffer = new Uint8Array(reader.result);
+        audioReader.readAsArrayBuffer(audioBlob);
 
-            resolve(new Blob([webmBuffer], { type: 'video/mp4' }));
+
+
+        videoReader.onload = () => {
+
+            audioReader.onload = () => {
+
+                const videoBuffer = new Uint8Array(videoReader.result);
+
+                const audioBuffer = new Uint8Array(audioReader.result);
+
+
+
+                const combinedBuffer = new Uint8Array(videoBuffer.length + audioBuffer.length);
+
+                combinedBuffer.set(videoBuffer, 0);
+
+                combinedBuffer.set(audioBuffer, videoBuffer.length);
+
+
+
+                resolve(new Blob([combinedBuffer], { type: 'video/mp4' }));
+
+            };
 
         };
 
