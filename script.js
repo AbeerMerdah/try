@@ -1,5 +1,3 @@
-أنا
-
 let mediaRecorder;
 
 let audioChunks = [];
@@ -10,23 +8,23 @@ let audioUrl;
 
 let recordedAudio = null;
 
-let isRecording = false; // لمنع تسجيل صوت جديد أثناء التسجيل
+let isRecording = false; // لمنع تكرار التسجيل
 
-let isAudioPlaying = false; // لمنع تكرار الصوت
+let isAudioPlaying = false; // لمنع تكرار تشغيل الصوت
 
 
 
-// ⏺️ بدء التسجيل
+// ⏺️ **بدء التسجيل**
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
     try {
 
-        if (isRecording) return; // منع بدء تسجيل جديد أثناء التسجيل
+        if (isRecording) return; // منع تسجيل جديد أثناء التسجيل الحالي
 
         isRecording = true;
 
-        
+
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -72,17 +70,19 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             recordedAudio = new Audio(audioUrl);
 
-            isRecording = false; // إعادة تعيين حالة التسجيل
+            isRecording = false; // إعادة تمكين التسجيل بعد الانتهاء
 
-            isAudioPlaying = false; // إعادة تعيين حالة التشغيل
+            isAudioPlaying = false;
 
         };
 
     } catch (error) {
 
-        console.error("خطأ في تشغيل المايكروفون:", error);
+        console.error("❌ خطأ في تشغيل المايكروفون:", error);
 
         alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+
+        isRecording = false; // إعادة تمكين التسجيل إذا فشل
 
     }
 
@@ -90,13 +90,15 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-// ⏹️ إيقاف التسجيل
+// ⏹️ **إيقاف التسجيل**
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
-    if (mediaRecorder) {
+    if (mediaRecorder && isRecording) {
 
         mediaRecorder.stop();
+
+        isRecording = false;
 
     }
 
@@ -108,7 +110,7 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
 
 
-// 📷 تحميل الصورة
+// 📷 **تحميل الصورة**
 
 document.getElementById('upload-image').addEventListener('click', () => {
 
@@ -152,7 +154,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 
 
-// 🎥 حفظ الفيديو مع الصوت
+// 🎥 **حفظ الفيديو مع الصوت**
 
 document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
@@ -251,4 +253,3 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     };
 
 });
-
