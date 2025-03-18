@@ -8,8 +8,6 @@ let audioUrl;
 
 let recordedAudio = null;
 
-let isRecording = false;
-
 
 
 // ⏺️ بدء التسجيل
@@ -28,8 +26,6 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.start();
 
-        isRecording = true;
-
         document.getElementById('start-recording').disabled = true;
 
         document.getElementById('stop-recording').disabled = false;
@@ -46,7 +42,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // تأكد من التنسيق المدعوم
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -58,19 +54,19 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             audioElement.style.display = 'block';
 
+            audioElement.controls = true;
+
 
 
             recordedAudio = new Audio(audioUrl);
-
-            isRecording = false;
 
         };
 
     } catch (error) {
 
-        alert("❌ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+        console.error("⚠️ خطأ في الوصول إلى الميكروفون:", error);
 
-        console.error("حدث خطأ:", error);
+        alert("يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
     }
 
@@ -82,15 +78,15 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
-    if (mediaRecorder && isRecording) {
+    if (mediaRecorder) {
 
         mediaRecorder.stop();
 
-        document.getElementById('start-recording').disabled = false;
-
-        document.getElementById('stop-recording').disabled = true;
-
     }
+
+    document.getElementById('start-recording').disabled = false;
+
+    document.getElementById('stop-recording').disabled = true;
 
 });
 
@@ -132,7 +128,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("❌ يرجى تحميل صورة.");
+        alert("يرجى تحميل صورة.");
 
     }
 
@@ -142,11 +138,11 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 // 🎥 حفظ الفيديو مع الصوت
 
-document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
+document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("❌ يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -174,15 +170,17 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
+        // تحويل الـ canvas إلى فيديو
+
         const stream = canvas.captureStream(30);
 
-        const mediaRecorder = new MediaRecorder(stream);
+        const videoRecorder = new MediaRecorder(stream);
 
         const videoChunks = [];
 
 
 
-        mediaRecorder.ondataavailable = event => {
+        videoRecorder.ondataavailable = event => {
 
             videoChunks.push(event.data);
 
@@ -190,11 +188,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        mediaRecorder.onstop = async () => {
+        videoRecorder.onstop = async () => {
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-            const finalVideoUrl = URL.createObjectURL(videoBlob);
+            const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
+
+            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
@@ -204,7 +204,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             a.href = finalVideoUrl;
 
-            a.download = 'eid_greeting_card.webm';
+            a.download = 'eid_greeting_card.mp4';
 
             document.body.appendChild(a);
 
@@ -212,13 +212,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             document.body.removeChild(a);
 
-            alert("✅ تم حفظ الفيديو بنجاح!");
+            alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
 
         };
 
 
 
-        mediaRecorder.start();
+        videoRecorder.start();
 
         recordedAudio.play();
 
@@ -226,11 +226,59 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         recordedAudio.onended = () => {
 
-            mediaRecorder.stop();
+            videoRecorder.stop();
 
         };
 
     };
 
 });
+
+
+
+// **🛠️ دمج الصوت مع الفيديو**
+
+async function mergeAudioWithVideo(videoBlob, audioBlob) {
+
+    return new Promise(resolve => {
+
+        const reader1 = new FileReader();
+
+        const reader2 = new FileReader();
+
+
+
+        reader1.readAsArrayBuffer(videoBlob);
+
+        reader2.readAsArrayBuffer(audioBlob);
+
+
+
+        reader1.onload = () => {
+
+            reader2.onload = () => {
+
+                const videoBuffer = new Uint8Array(reader1.result);
+
+                const audioBuffer = new Uint8Array(reader2.result);
+
+
+
+                const combinedBuffer = new Uint8Array(videoBuffer.length + audioBuffer.length);
+
+                combinedBuffer.set(videoBuffer, 0);
+
+                combinedBuffer.set(audioBuffer, videoBuffer.length);
+
+
+
+                resolve(new Blob([combinedBuffer], { type: 'video/mp4' }));
+
+            };
+
+        };
+
+    });
+
+}
 
