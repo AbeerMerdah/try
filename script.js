@@ -42,7 +42,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         mediaRecorder.onstop = () => {
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // استخدام تنسيق متوافق
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -92,11 +92,11 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
 
 
-// 📷 تحميل الصورة
+// 📷 تحميل الصورة وعرضها
 
-document.getElementById('upload-image').addEventListener('change', () => {
+document.getElementById('image-upload').addEventListener('change', function () {
 
-    const imageInput = document.getElementById('image-upload');
+    const imageInput = this;
 
     const previewImage = document.getElementById('preview-image');
 
@@ -174,13 +174,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         const stream = canvas.captureStream(30);
 
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        const videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
         const videoChunks = [];
 
 
 
-        mediaRecorder.ondataavailable = event => {
+        videoRecorder.ondataavailable = event => {
 
             videoChunks.push(event.data);
 
@@ -188,7 +188,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        mediaRecorder.onstop = async () => {
+        videoRecorder.onstop = async () => {
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
@@ -218,7 +218,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-        mediaRecorder.start();
+        videoRecorder.start();
 
         recordedAudio.play();
 
@@ -226,7 +226,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         recordedAudio.onended = () => {
 
-            mediaRecorder.stop();
+            videoRecorder.stop();
 
         };
 
@@ -289,4 +289,3 @@ async function mergeAudioWithVideo(videoBlob, audioBlob) {
     });
 
 }
-
