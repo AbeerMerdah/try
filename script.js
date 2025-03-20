@@ -18,9 +18,11 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             type: 'audio',
 
-            mimeType: 'audio/webm', // تغيير هنا
+            mimeType: 'audio/webm',
 
         });
+
+
 
         mediaRecorder.startRecording();
 
@@ -168,7 +170,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             type: 'video',
 
-            mimeType: 'video/webm',
+            mimeType: 'video/webm;codecs=vp9', // تغيير هنا لتحسين الجودة
 
         });
 
