@@ -170,7 +170,9 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             type: 'video',
 
-            mimeType: 'video/webm;codecs=vp8', // تغيير هنا لتحسين الجودة
+            mimeType: 'video/webm;codecs=vp8', // تغيير هنا لتحسين التوافق
+
+            videoBitsPerSecond: 2500000, // زيادة جودة الفيديو
 
         });
 
