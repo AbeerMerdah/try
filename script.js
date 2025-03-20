@@ -1,3 +1,11 @@
+
+
+const { createFFmpeg, fetchFile } = FFmpeg; // تأكد من أن FFmpeg محملة بشكل صحيح
+
+const ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
+
+
+
 let mediaRecorder;
 
 let audioBlob;
@@ -5,12 +13,6 @@ let audioBlob;
 let audioUrl;
 
 let imageFile;
-
-
-
-const { createFFmpeg, fetchFile } = FFmpeg;
-
-const ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
 
 
 
@@ -76,11 +78,13 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
         });
 
+
+
+        document.getElementById('start-recording').disabled = false;
+
+        document.getElementById('stop-recording').disabled = true;
+
     }
-
-    document.getElementById('start-recording').disabled = false;
-
-    document.getElementById('stop-recording').disabled = true;
 
 });
 
@@ -247,3 +251,4 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     }
 
 });
+
