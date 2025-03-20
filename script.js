@@ -1,13 +1,16 @@
-
 let mediaRecorder;
-
-let audioChunks = [];
 
 let audioBlob;
 
 let audioUrl;
 
 let imageFile;
+
+
+
+const { createFFmpeg, fetchFile } = FFmpeg;
+
+const ffmpeg = createFFmpeg({ log: true });
 
 
 
@@ -129,101 +132,110 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    const canvas = document.createElement('canvas');
+    try {
 
-    const context = canvas.getContext('2d');
+        if (!ffmpeg.isLoaded()) {
 
-    const image = new Image();
+            await ffmpeg.load();
 
-    const audio = new Audio(audioUrl);
-
-
-
-    image.src = URL.createObjectURL(imageFile);
-
-    await new Promise((resolve) => (image.onload = resolve));
+        }
 
 
 
-    canvas.width = image.width;
+        const imageUrl = URL.createObjectURL(imageFile);
 
-    canvas.height = image.height;
-
-    context.drawImage(image, 0, 0);
+        const audioUrl = URL.createObjectURL(audioBlob);
 
 
 
-    const stream = canvas.captureStream(30);
+        // تحميل الصورة والصوت إلى ffmpeg
 
-    const videoRecorder = new RecordRTC(stream, {
+        ffmpeg.FS('writeFile', 'image.png', await fetchFile(imageUrl));
 
-        type: 'video',
-
-        mimeType: 'video/webm',
-
-    });
+        ffmpeg.FS('writeFile', 'audio.wav', await fetchFile(audioUrl));
 
 
 
-    videoRecorder.startRecording();
+        // دمج الصوت مع الصورة باستخدام ffmpeg
 
-    audio.play();
+        await ffmpeg.run(
 
+            '-loop', '1',
 
+            '-i', 'image.png',
 
-    audio.onended = () => {
+            '-i', 'audio.wav',
 
-        videoRecorder.stopRecording(() => {
+            '-c:v', 'libx264',
 
-            const videoBlob = videoRecorder.getBlob();
+            '-t', '30', // مدة الفيديو (30 ثانية)
 
-            const videoUrl = URL.createObjectURL(videoBlob);
+            '-pix_fmt', 'yuv420p',
 
+            '-vf', 'scale=640:480', // حجم الفيديو
 
+            '-shortest',
 
-            // عرض الفيديو قبل التنزيل
+            'output.mp4'
 
-            const previewVideo = document.getElementById('preview-video');
-
-            previewVideo.src = videoUrl;
-
-            previewVideo.style.display = 'block';
-
-
-
-            // زر التنزيل
-
-            const downloadButton = document.createElement('button');
-
-            downloadButton.textContent = 'تنزيل الفيديو';
-
-            downloadButton.style.marginTop = '10px';
-
-            downloadButton.onclick = () => {
-
-                const a = document.createElement('a');
-
-                a.href = videoUrl;
-
-                a.download = 'eid_greeting_card.webm';
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-            };
-
-            document.querySelector('.preview-section').appendChild(downloadButton);
+        );
 
 
 
-            alert("تم إنشاء الفيديو بنجاح!");
+        // قراءة الفيديو الناتج
 
-        });
+        const data = ffmpeg.FS('readFile', 'output.mp4');
 
-    };
+        const videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+
+
+
+        // عرض الفيديو
+
+        const previewVideo = document.getElementById('preview-video');
+
+        previewVideo.src = videoUrl;
+
+        previewVideo.style.display = 'block';
+
+
+
+        // زر التنزيل
+
+        const downloadButton = document.createElement('button');
+
+        downloadButton.textContent = 'تنزيل الفيديو';
+
+        downloadButton.style.marginTop = '10px';
+
+        downloadButton.onclick = () => {
+
+            const a = document.createElement('a');
+
+            a.href = videoUrl;
+
+            a.download = 'eid_greeting_card.mp4';
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+
+        };
+
+        document.querySelector('.preview-section').appendChild(downloadButton);
+
+
+
+        alert("تم إنشاء الفيديو بنجاح!");
+
+    } catch (error) {
+
+        console.error("حدث خطأ أثناء إنشاء الفيديو:", error);
+
+        alert("حدث خطأ أثناء إنشاء الفيديو. يرجى المحاولة مرة أخرى.");
+
+    }
 
 });
-
