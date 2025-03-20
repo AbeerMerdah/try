@@ -24,7 +24,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             type: 'audio',
 
-            mimeType: 'audio/wav',
+            mimeType: 'audio/webm', // تغيير هنا
 
         });
 
@@ -152,7 +152,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
         ffmpeg.FS('writeFile', 'image.png', await fetchFile(imageUrl));
 
-        ffmpeg.FS('writeFile', 'audio.wav', await fetchFile(audioUrl));
+        ffmpeg.FS('writeFile', 'audio.webm', await fetchFile(audioUrl));
 
 
 
@@ -164,7 +164,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             '-i', 'image.png',
 
-            '-i', 'audio.wav',
+            '-i', 'audio.webm',
 
             '-c:v', 'libx264',
 
@@ -239,3 +239,4 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     }
 
 });
+
