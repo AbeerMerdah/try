@@ -1,6 +1,4 @@
-
-
-const { createFFmpeg, fetchFile } = FFmpeg; // تأكد من أن FFmpeg محملة بشكل صحيح
+const { createFFmpeg, fetchFile } = FFmpeg;
 
 const ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
 
@@ -251,4 +249,6 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     }
 
 });
+
+
 
