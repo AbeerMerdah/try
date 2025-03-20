@@ -2,9 +2,7 @@ let mediaRecorder;
 
 let audioChunks = [];
 
-let audioBlob;
-
-let audioUrl;
+let audioBlob = null;
 
 let recordedAudio = null;
 
@@ -44,7 +42,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
-            audioUrl = URL.createObjectURL(audioBlob);
+            const audioUrl = URL.createObjectURL(audioBlob);
 
 
 
@@ -66,9 +64,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     } catch (error) {
 
-        console.error("حدث خطأ في الميكروفون:", error);
-
-        alert("يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
+        alert("⚠️ يرجى السماح بالوصول إلى الميكروفون من إعدادات الجهاز.");
 
     }
 
@@ -102,8 +98,6 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     const previewImage = document.getElementById('preview-image');
 
-    const saveButton = document.getElementById('save-to-camera-roll');
-
 
 
     if (imageInput.files.length > 0) {
@@ -120,8 +114,6 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
             previewImage.style.display = 'block';
 
-            saveButton.style.display = 'block';
-
         };
 
 
@@ -130,7 +122,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("يرجى تحميل صورة.");
+        alert("⚠️ يرجى تحميل صورة.");
 
     }
 
@@ -140,11 +132,11 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 // 🎥 حفظ الفيديو مع الصوت
 
-document.getElementById('save-to-camera-roll').addEventListener('click', () => {
+document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
     if (!audioBlob || !document.getElementById('preview-image').src) {
 
-        alert("يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -194,11 +186,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-            // **🛠️ استخدام FFmpeg لدمج الصوت مع الفيديو**
+            // **🛠️ استخدام Web Audio API لدمج الصوت مع الفيديو**
 
-            const mergedVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
+            const finalVideoBlob = await mergeAudioWithVideo(videoBlob, audioBlob);
 
-            const finalVideoUrl = URL.createObjectURL(mergedVideoBlob);
+            const finalVideoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
@@ -216,7 +208,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
             document.body.removeChild(a);
 
-            alert("🎉 تم حفظ الفيديو مع الصوت بنجاح!");
+            alert("✅ تم حفظ الفيديو مع الصوت بنجاح!");
 
         };
 
@@ -240,7 +232,7 @@ document.getElementById('save-to-camera-roll').addEventListener('click', () => {
 
 
 
-// **🛠️ دمج الصوت مع الفيديو باستخدام Web Audio API**
+// **🛠️ دمج الصوت مع الفيديو**
 
 async function mergeAudioWithVideo(videoBlob, audioBlob) {
 
