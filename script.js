@@ -1,12 +1,16 @@
 let mediaRecorder;
 
-let audioChunks = [];
-
 let audioBlob;
 
 let audioUrl;
 
 let imageFile;
+
+
+
+const { createFFmpeg, fetchFile } = FFmpeg;
+
+const ffmpeg = createFFmpeg({ log: true });
 
 
 
@@ -128,101 +132,81 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    const canvas = document.createElement('canvas');
+    if (!ffmpeg.isLoaded()) {
 
-    const context = canvas.getContext('2d');
+        await ffmpeg.load();
 
-    const image = new Image();
-
-    const audio = new Audio(audioUrl);
+    }
 
 
 
-    image.src = URL.createObjectURL(imageFile);
+    const imageUrl = URL.createObjectURL(imageFile);
 
-    await new Promise((resolve) => (image.onload = resolve));
-
-
-
-    canvas.width = image.width;
-
-    canvas.height = image.height;
-
-    context.drawImage(image, 0, 0);
+    const audioUrl = URL.createObjectURL(audioBlob);
 
 
 
-    const stream = canvas.captureStream(30);
+    // تحميل الصورة والصوت إلى ffmpeg
 
-    const videoRecorder = new RecordRTC(stream, {
+    ffmpeg.FS('writeFile', 'image.png', await fetchFile(imageUrl));
 
-        type: 'video',
-
-        mimeType: 'video/webm',
-
-    });
+    ffmpeg.FS('writeFile', 'audio.wav', await fetchFile(audioUrl));
 
 
 
-    videoRecorder.startRecording();
+    // دمج الصوت مع الصورة باستخدام ffmpeg
 
-    audio.play();
-
-
-
-    audio.onended = () => {
-
-        videoRecorder.stopRecording(() => {
-
-            const videoBlob = videoRecorder.getBlob();
-
-            const videoUrl = URL.createObjectURL(videoBlob);
+    await ffmpeg.run('-i', 'image.png', '-i', 'audio.wav', '-c:v', 'libx264', '-c:a', 'aac', '-strict', 'experimental', '-shortest', 'output.mp4');
 
 
 
-            // عرض الفيديو قبل التنزيل
+    // قراءة الفيديو الناتج
 
-            const previewVideo = document.getElementById('preview-video');
+    const data = ffmpeg.FS('readFile', 'output.mp4');
 
-            previewVideo.src = videoUrl;
-
-            previewVideo.style.display = 'block';
+    const videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 
 
 
-            // زر التنزيل
+    // عرض الفيديو
 
-            const downloadButton = document.createElement('button');
+    const previewVideo = document.getElementById('preview-video');
 
-            downloadButton.textContent = 'تنزيل الفيديو';
+    previewVideo.src = videoUrl;
 
-            downloadButton.style.marginTop = '10px';
-
-            downloadButton.onclick = () => {
-
-                const a = document.createElement('a');
-
-                a.href = videoUrl;
-
-                a.download = 'eid_greeting_card.webm';
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-            };
-
-            document.querySelector('.preview-section').appendChild(downloadButton);
+    previewVideo.style.display = 'block';
 
 
 
-            alert("تم إنشاء الفيديو بنجاح!");
+    // زر التنزيل
 
-        });
+    const downloadButton = document.createElement('button');
+
+    downloadButton.textContent = 'تنزيل الفيديو';
+
+    downloadButton.style.marginTop = '10px';
+
+    downloadButton.onclick = () => {
+
+        const a = document.createElement('a');
+
+        a.href = videoUrl;
+
+        a.download = 'eid_greeting_card.mp4';
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
 
     };
+
+    document.querySelector('.preview-section').appendChild(downloadButton);
+
+
+
+    alert("تم إنشاء الفيديو بنجاح!");
 
 });
 
