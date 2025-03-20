@@ -132,81 +132,111 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    if (!ffmpeg.isLoaded()) {
+    try {
 
-        await ffmpeg.load();
+        if (!ffmpeg.isLoaded()) {
+
+            await ffmpeg.load();
+
+        }
+
+
+
+        const imageUrl = URL.createObjectURL(imageFile);
+
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+
+
+        // تحميل الصورة والصوت إلى ffmpeg
+
+        ffmpeg.FS('writeFile', 'image.png', await fetchFile(imageUrl));
+
+        ffmpeg.FS('writeFile', 'audio.wav', await fetchFile(audioUrl));
+
+
+
+        // دمج الصوت مع الصورة باستخدام ffmpeg
+
+        await ffmpeg.run(
+
+            '-loop', '1',
+
+            '-i', 'image.png',
+
+            '-i', 'audio.wav',
+
+            '-c:v', 'libx264',
+
+            '-t', '30', // مدة الفيديو (30 ثانية)
+
+            '-pix_fmt', 'yuv420p',
+
+            '-vf', 'scale=640:480', // حجم الفيديو
+
+            '-shortest',
+
+            'output.mp4'
+
+        );
+
+
+
+        // قراءة الفيديو الناتج
+
+        const data = ffmpeg.FS('readFile', 'output.mp4');
+
+        const videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+
+
+
+        // عرض الفيديو
+
+        const previewVideo = document.getElementById('preview-video');
+
+        previewVideo.src = videoUrl;
+
+        previewVideo.style.display = 'block';
+
+
+
+        // زر التنزيل
+
+        const downloadButton = document.createElement('button');
+
+        downloadButton.textContent = 'تنزيل الفيديو';
+
+        downloadButton.style.marginTop = '10px';
+
+        downloadButton.onclick = () => {
+
+            const a = document.createElement('a');
+
+            a.href = videoUrl;
+
+            a.download = 'eid_greeting_card.mp4';
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+
+        };
+
+        document.querySelector('.preview-section').appendChild(downloadButton);
+
+
+
+        alert("تم إنشاء الفيديو بنجاح!");
+
+    } catch (error) {
+
+        console.error("حدث خطأ أثناء إنشاء الفيديو:", error);
+
+        alert("حدث خطأ أثناء إنشاء الفيديو. يرجى المحاولة مرة أخرى.");
 
     }
-
-
-
-    const imageUrl = URL.createObjectURL(imageFile);
-
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-
-
-    // تحميل الصورة والصوت إلى ffmpeg
-
-    ffmpeg.FS('writeFile', 'image.png', await fetchFile(imageUrl));
-
-    ffmpeg.FS('writeFile', 'audio.wav', await fetchFile(audioUrl));
-
-
-
-    // دمج الصوت مع الصورة باستخدام ffmpeg
-
-    await ffmpeg.run('-i', 'image.png', '-i', 'audio.wav', '-c:v', 'libx264', '-c:a', 'aac', '-strict', 'experimental', '-shortest', 'output.mp4');
-
-
-
-    // قراءة الفيديو الناتج
-
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-
-    const videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-
-
-
-    // عرض الفيديو
-
-    const previewVideo = document.getElementById('preview-video');
-
-    previewVideo.src = videoUrl;
-
-    previewVideo.style.display = 'block';
-
-
-
-    // زر التنزيل
-
-    const downloadButton = document.createElement('button');
-
-    downloadButton.textContent = 'تنزيل الفيديو';
-
-    downloadButton.style.marginTop = '10px';
-
-    downloadButton.onclick = () => {
-
-        const a = document.createElement('a');
-
-        a.href = videoUrl;
-
-        a.download = 'eid_greeting_card.mp4';
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        document.body.removeChild(a);
-
-    };
-
-    document.querySelector('.preview-section').appendChild(downloadButton);
-
-
-
-    alert("تم إنشاء الفيديو بنجاح!");
 
 });
 
