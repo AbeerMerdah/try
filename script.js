@@ -10,7 +10,7 @@ let imageFile;
 
 const { createFFmpeg, fetchFile } = FFmpeg;
 
-const ffmpeg = createFFmpeg({ log: true });
+const ffmpeg = createFFmpeg({ log: true, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js' });
 
 
 
@@ -24,7 +24,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             type: 'audio',
 
-            mimeType: 'audio/webm', // تغيير هنا
+            mimeType: 'audio/webm',
 
         });
 
