@@ -180,9 +180,25 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-            if (navigator.userAgent.match(/Android|iPhone|iPad/i)) {
+            // عرض الفيديو قبل التنزيل
 
-                // حفظ الفيديو في ألبوم الكاميرا (للهواتف)
+            const previewVideo = document.getElementById('preview-video');
+
+            previewVideo.src = videoUrl;
+
+            previewVideo.style.display = 'block';
+
+
+
+            // زر التنزيل
+
+            const downloadButton = document.createElement('button');
+
+            downloadButton.textContent = 'تنزيل الفيديو';
+
+            downloadButton.style.marginTop = '10px';
+
+            downloadButton.onclick = () => {
 
                 const a = document.createElement('a');
 
@@ -196,33 +212,17 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
                 document.body.removeChild(a);
 
-            } else {
+            };
 
-                // تنزيل الفيديو على اللابتوب
-
-                const a = document.createElement('a');
-
-                a.href = videoUrl;
-
-                a.download = 'eid_greeting_card.webm';
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                document.body.removeChild(a);
-
-            }
+            document.querySelector('.preview-section').appendChild(downloadButton);
 
 
 
-            alert("تم حفظ الفيديو!");
+            alert("تم إنشاء الفيديو بنجاح!");
 
         });
 
     };
 
 });
-
-
 
