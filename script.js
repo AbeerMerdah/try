@@ -1,7 +1,5 @@
 let mediaRecorder;
 
-let audioChunks = [];
-
 let audioBlob;
 
 let audioUrl;
@@ -10,7 +8,7 @@ let imageFile;
 
 
 
-// ⏺️ بدء تسجيل الصوت
+// ⏺️ تسجيل الصوت
 
 document.getElementById('start-recording').addEventListener('click', async () => {
 
@@ -18,23 +16,17 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorder = new RecordRTC(stream, {
 
-        audioChunks = [];
+            type: 'audio',
 
+            mimeType: 'audio/webm', // استخدام webm لدعم أوسع
 
-
-        mediaRecorder.ondataavailable = event => {
-
-            audioChunks.push(event.data);
-
-        };
+        });
 
 
 
-        mediaRecorder.start();
-
-
+        mediaRecorder.startRecording();
 
         document.getElementById('start-recording').disabled = true;
 
@@ -44,7 +36,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
     } catch (error) {
 
-        console.error("⚠️ خطأ في تشغيل الميكروفون:", error);
+        console.error("❌ خطأ في تشغيل الميكروفون:", error);
 
         alert("يرجى السماح بالوصول إلى الميكروفون.");
 
@@ -54,17 +46,15 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
 
 
-// ⏹️ إيقاف تسجيل الصوت
+// ⏹️ إيقاف التسجيل
 
 document.getElementById('stop-recording').addEventListener('click', () => {
 
     if (mediaRecorder) {
 
-        mediaRecorder.stop();
+        mediaRecorder.stopRecording(() => {
 
-        mediaRecorder.onstop = () => {
-
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            audioBlob = mediaRecorder.getBlob();
 
             audioUrl = URL.createObjectURL(audioBlob);
 
@@ -78,13 +68,11 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
 
 
-            const previewAudio = document.getElementById('preview-audio');
+            document.getElementById('preview-audio').src = audioUrl;
 
-            previewAudio.src = audioUrl;
+            document.getElementById('preview-audio').style.display = 'block';
 
-            previewAudio.style.display = 'block';
-
-        };
+        });
 
     }
 
@@ -134,7 +122,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     } else {
 
-        alert("⚠️ يرجى تحميل صورة.");
+        alert("❌ يرجى تحميل صورة.");
 
     }
 
@@ -142,13 +130,13 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
 
 
-// 🎥 إنشاء الفيديو
+// 🎥 حفظ الفيديو مع الصوت
 
 document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
 
     if (!audioBlob || !imageFile) {
 
-        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
+        alert("❌ يرجى تسجيل الصوت وتحميل صورة أولًا.");
 
         return;
 
@@ -161,8 +149,6 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     const context = canvas.getContext('2d');
 
     const image = new Image();
-
-    const audio = new Audio(audioUrl);
 
 
 
@@ -182,21 +168,21 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
     const stream = canvas.captureStream(30);
 
-    const videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    const videoRecorder = new RecordRTC(stream, {
 
-    const videoChunks = [];
+        type: 'video',
 
+        mimeType: 'video/webm', // استخدام webm لضمان دعم واسع
 
-
-    videoRecorder.ondataavailable = event => {
-
-        videoChunks.push(event.data);
-
-    };
+    });
 
 
 
-    videoRecorder.start();
+    videoRecorder.startRecording();
+
+
+
+    const audio = new Audio(audioUrl);
 
     audio.play();
 
@@ -204,17 +190,15 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
     audio.onended = () => {
 
-        videoRecorder.stop();
+        videoRecorder.stopRecording(() => {
 
-        videoRecorder.onstop = async () => {
-
-            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+            const videoBlob = videoRecorder.getBlob();
 
             const videoUrl = URL.createObjectURL(videoBlob);
 
 
 
-            // عرض الفيديو بعد إنشائه
+            // عرض الفيديو قبل التنزيل
 
             const previewVideo = document.createElement('video');
 
@@ -222,9 +206,11 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             previewVideo.controls = true;
 
-            previewVideo.style.width = '100%';
+            previewVideo.style.width = "100%";
 
-            previewVideo.style.marginTop = '10px';
+            previewVideo.style.marginTop = "10px";
+
+            document.querySelector('.preview-section').appendChild(previewVideo);
 
 
 
@@ -238,35 +224,28 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             downloadButton.textContent = '📥 تنزيل الفيديو';
 
-            downloadButton.style.display = 'block';
+            downloadButton.style.display = "block";
 
-            downloadButton.style.background = '#4CAF50';
+            downloadButton.style.marginTop = "10px";
 
-            downloadButton.style.color = 'white';
+            downloadButton.style.background = "#28a745";
 
-            downloadButton.style.padding = '10px';
+            downloadButton.style.color = "white";
 
-            downloadButton.style.marginTop = '10px';
+            downloadButton.style.padding = "10px";
 
-            downloadButton.style.textAlign = 'center';
+            downloadButton.style.textAlign = "center";
 
-            downloadButton.style.borderRadius = '5px';
-
-            downloadButton.style.textDecoration = 'none';
-
-
-
-            document.querySelector('.preview-section').appendChild(previewVideo);
+            downloadButton.style.borderRadius = "5px";
 
             document.querySelector('.preview-section').appendChild(downloadButton);
 
 
 
-            alert("🎉 تم إنشاء الفيديو بنجاح!");
+            alert("✅ تم إنشاء الفيديو بنجاح!");
 
-        };
+        });
 
     };
 
 });
-
