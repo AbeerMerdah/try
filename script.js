@@ -36,6 +36,10 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
         document.getElementById('stop-recording').disabled = false;
 
+
+
+        console.log("بدأ التسجيل بنجاح!");
+
     } catch (error) {
 
         console.error("حدث خطأ أثناء تشغيل الميكروفون:", error);
@@ -65,6 +69,10 @@ document.getElementById('stop-recording').addEventListener('click', () => {
             document.getElementById('preview-audio').src = audioUrl;
 
             document.getElementById('preview-audio').style.display = 'block';
+
+
+
+            console.log("تم إيقاف التسجيل بنجاح!");
 
         });
 
@@ -239,4 +247,3 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     }
 
 });
-
