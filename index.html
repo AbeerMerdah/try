@@ -28,9 +28,9 @@
 
         <div class="recording-section">
 
-            <button id="start-recording" class="record-btn">🎤 تسجيل صوت التهنئة</button>
+            <button id="start-recording">🎤 تسجيل صوت التهنئة</button>
 
-            <button id="stop-recording" class="stop-btn" disabled>🛑 إيقاف التسجيل</button>
+            <button id="stop-recording" disabled>🛑 إيقاف التسجيل</button>
 
             <audio id="audio" controls style="display:none;"></audio>
 
@@ -42,7 +42,7 @@
 
             <input type="file" id="image-upload" accept="image/*">
 
-            <button id="upload-image" class="upload-btn">📸 تحميل الصورة</button>
+            <button id="upload-image">📷 تحميل الصورة</button>
 
         </div>
 
@@ -50,7 +50,7 @@
 
         <div class="preview-section">
 
-            <img id="preview-image" src="" alt="Preview" style="display:none;">
+            <img id="preview-image" src="" alt="معايدة العيد" style="display:none;">
 
             <audio id="preview-audio" controls style="display:none;"></audio>
 
@@ -58,15 +58,19 @@
 
 
 
-        <button id="save-to-camera-roll" class="save-btn" style="display:none;">🎬 حفظ التهنئة كفيديو</button>
+        <button id="save-to-camera-roll" style="display:none;">🎬 حفظ التهنئة كفيديو</button>
 
     </div>
 
 
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.2/RecordRTC.js"></script>
 
     <script src="script.js"></script>
 
 </body>
 
 </html>
+
+
 

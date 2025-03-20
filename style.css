@@ -1,7 +1,7 @@
 
 body {
 
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
 
     display: flex;
 
@@ -11,7 +11,11 @@ body {
 
     height: 100vh;
 
-    background-color: #f8f9fa;
+    background-color: #F7F8FC;
+
+    text-align: center;
+
+    margin: 0;
 
 }
 
@@ -21,25 +25,37 @@ body {
 
     text-align: center;
 
-    background: white;
+    background: #FFFFFF;
 
     padding: 20px;
 
-    border-radius: 10px;
+    border-radius: 12px;
 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-    width: 90%;
+    width: 80%;
 
-    max-width: 400px;
+    max-width: 500px;
 
 }
 
 
 
-h1, h2, h3 {
+h1 {
 
-    margin: 10px 0;
+    color: #2C3E50;
+
+    font-size: 24px;
+
+}
+
+
+
+h2, h3 {
+
+    color: #34495E;
+
+    font-size: 18px;
 
 }
 
@@ -47,17 +63,127 @@ h1, h2, h3 {
 
 button {
 
-    padding: 10px;
+    padding: 12px;
+
+    margin: 10px 0;
 
     border: none;
 
     cursor: pointer;
 
+    font-size: 16px;
+
+    border-radius: 6px;
+
     width: 100%;
 
-    margin: 5px 0;
+    transition: 0.3s;
 
-    font-size: 16px;
+}
+
+
+
+#start-recording {
+
+    background-color: #4CAF50;
+
+    color: white;
+
+}
+
+
+
+#start-recording:hover {
+
+    background-color: #45A049;
+
+}
+
+
+
+#stop-recording {
+
+    background-color: #E74C3C;
+
+    color: white;
+
+}
+
+
+
+#stop-recording:hover {
+
+    background-color: #C0392B;
+
+}
+
+
+
+#upload-image {
+
+    background-color: #3498DB;
+
+    color: white;
+
+}
+
+
+
+#upload-image:hover {
+
+    background-color: #2980B9;
+
+}
+
+
+
+#save-to-camera-roll {
+
+    background-color: #2ECC71;
+
+    color: white;
+
+}
+
+
+
+#save-to-camera-roll:hover {
+
+    background-color: #27AE60;
+
+}
+
+
+
+.recording-section, .upload-section, .preview-section {
+
+    margin-top: 15px;
+
+}
+
+
+
+.preview-section img {
+
+    max-width: 100%;
+
+    margin-top: 10px;
+
+    border-radius: 10px;
+
+    border: 2px solid #BDC3C7;
+
+}
+
+
+
+audio {
+
+    width: 100%;
+
+    margin-top: 10px;
+
+    background-color: #ECF0F1;
 
     border-radius: 5px;
 
@@ -65,50 +191,17 @@ button {
 
 
 
-.record-btn {
+input[type="file"] {
 
-    background-color: #28a745;
+    border: 1px solid #BDC3C7;
 
-    color: white;
+    padding: 5px;
 
-}
+    border-radius: 5px;
 
-
-
-.stop-btn {
-
-    background-color: #dc3545;
-
-    color: white;
+    background: #ECF0F1;
 
 }
 
 
 
-.upload-btn {
-
-    background-color: #007bff;
-
-    color: white;
-
-}
-
-
-
-.save-btn {
-
-    background-color: #ffc107;
-
-    color: black;
-
-}
-
-
-
-button:disabled {
-
-    background-color: #6c757d;
-
-    cursor: not-allowed;
-
-}
