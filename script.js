@@ -210,7 +210,13 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
             const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
 
-            const videoUrl = URL.createObjectURL(videoBlob);
+
+
+            // تحويل الفيديو إلى MP4
+
+            const finalVideoBlob = await convertWebMToMP4(videoBlob);
+
+            const videoUrl = URL.createObjectURL(finalVideoBlob);
 
 
 
@@ -269,4 +275,30 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
     };
 
 });
+
+
+
+// **📌 تحويل WebM إلى MP4**
+
+async function convertWebMToMP4(videoBlob) {
+
+    return new Promise(resolve => {
+
+        const reader = new FileReader();
+
+        reader.readAsArrayBuffer(videoBlob);
+
+        reader.onload = async () => {
+
+            const buffer = new Uint8Array(reader.result);
+
+            const finalBlob = new Blob([buffer], { type: 'video/mp4' });
+
+            resolve(finalBlob);
+
+        };
+
+    });
+
+}
 
