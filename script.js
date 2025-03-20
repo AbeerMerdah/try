@@ -1,6 +1,8 @@
 
 let mediaRecorder;
 
+let audioChunks = [];
+
 let audioBlob;
 
 let audioUrl;
@@ -19,7 +21,7 @@ document.getElementById('start-recording').addEventListener('click', async () =>
 
             type: 'audio',
 
-            mimeType: 'audio/webm',
+            mimeType: 'audio/wav',
 
         });
 
@@ -30,10 +32,6 @@ document.getElementById('start-recording').addEventListener('click', async () =>
         document.getElementById('start-recording').disabled = true;
 
         document.getElementById('stop-recording').disabled = false;
-
-
-
-        console.log("بدأ التسجيل بنجاح!");
 
     } catch (error) {
 
@@ -65,19 +63,13 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
             document.getElementById('preview-audio').style.display = 'block';
 
-
-
-            console.log("تم إيقاف التسجيل بنجاح!");
-
         });
 
-
-
-        document.getElementById('start-recording').disabled = false;
-
-        document.getElementById('stop-recording').disabled = true;
-
     }
+
+    document.getElementById('start-recording').disabled = false;
+
+    document.getElementById('stop-recording').disabled = true;
 
 });
 
@@ -137,77 +129,101 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    try {
+    const canvas = document.createElement('canvas');
 
-        // إنشاء فيديو باستخدام html2canvas و jszip
+    const context = canvas.getContext('2d');
 
-        const canvas = await html2canvas(document.querySelector('.preview-section'));
+    const image = new Image();
 
-        const imageUrl = canvas.toDataURL('image/png');
-
-
-
-        const zip = new JSZip();
-
-        zip.file("image.png", imageUrl.split(',')[1], { base64: true });
-
-        zip.file("audio.webm", audioBlob);
+    const audio = new Audio(audioUrl);
 
 
 
-        const content = await zip.generateAsync({ type: "blob" });
+    image.src = URL.createObjectURL(imageFile);
 
-        const videoUrl = URL.createObjectURL(content);
-
-
-
-        // عرض الفيديو
-
-        const previewVideo = document.getElementById('preview-video');
-
-        previewVideo.src = videoUrl;
-
-        previewVideo.style.display = 'block';
+    await new Promise((resolve) => (image.onload = resolve));
 
 
 
-        // زر التنزيل
+    canvas.width = image.width;
 
-        const downloadButton = document.createElement('button');
+    canvas.height = image.height;
 
-        downloadButton.textContent = 'تنزيل الفيديو';
-
-        downloadButton.style.marginTop = '10px';
-
-        downloadButton.onclick = () => {
-
-            const a = document.createElement('a');
-
-            a.href = videoUrl;
-
-            a.download = 'eid_greeting_card.zip';
-
-            document.body.appendChild(a);
-
-            a.click();
-
-            document.body.removeChild(a);
-
-        };
-
-        document.querySelector('.preview-section').appendChild(downloadButton);
+    context.drawImage(image, 0, 0);
 
 
 
-        alert("تم إنشاء الفيديو بنجاح!");
+    const stream = canvas.captureStream(30);
 
-    } catch (error) {
+    const videoRecorder = new RecordRTC(stream, {
 
-        console.error("حدث خطأ أثناء إنشاء الفيديو:", error);
+        type: 'video',
 
-        alert("حدث خطأ أثناء إنشاء الفيديو. يرجى المحاولة مرة أخرى.");
+        mimeType: 'video/webm',
 
-    }
+    });
+
+
+
+    videoRecorder.startRecording();
+
+    audio.play();
+
+
+
+    audio.onended = () => {
+
+        videoRecorder.stopRecording(() => {
+
+            const videoBlob = videoRecorder.getBlob();
+
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+
+
+            // عرض الفيديو قبل التنزيل
+
+            const previewVideo = document.getElementById('preview-video');
+
+            previewVideo.src = videoUrl;
+
+            previewVideo.style.display = 'block';
+
+
+
+            // زر التنزيل
+
+            const downloadButton = document.createElement('button');
+
+            downloadButton.textContent = 'تنزيل الفيديو';
+
+            downloadButton.style.marginTop = '10px';
+
+            downloadButton.onclick = () => {
+
+                const a = document.createElement('a');
+
+                a.href = videoUrl;
+
+                a.download = 'eid_greeting_card.webm';
+
+                document.body.appendChild(a);
+
+                a.click();
+
+                document.body.removeChild(a);
+
+            };
+
+            document.querySelector('.preview-section').appendChild(downloadButton);
+
+
+
+            alert("تم إنشاء الفيديو بنجاح!");
+
+        });
+
+    };
 
 });
 
