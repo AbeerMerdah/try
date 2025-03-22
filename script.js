@@ -1,243 +1,86 @@
+const express = require('express');
 
-let mediaRecorder;
+const multer = require('multer');
 
-let audioChunks = [];
+const ffmpeg = require('fluent-ffmpeg');
 
-let audioBlob;
+const path = require('path');
 
-let imageFile;
-
-
-
-// ⏺️ بدء تسجيل الصوت
-
-document.getElementById('start-recording').addEventListener('click', async () => {
-
-    try {
-
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-
-        audioChunks = [];
+const fs = require('fs');
 
 
 
-        mediaRecorder.ondataavailable = event => {
+const app = express();
 
-            audioChunks.push(event.data);
-
-        };
+const upload = multer({ dest: 'uploads/' });
 
 
 
-        mediaRecorder.start();
+// تعريف route لاستقبال الصوت والصورة
+
+app.post('/merge', upload.fields([{ name: 'audio' }, { name: 'image' }]), (req, res) => {
+
+    const audioPath = req.files['audio'][0].path;
+
+    const imagePath = req.files['image'][0].path;
+
+    const outputPath = path.join(__dirname, 'output.mp4');
 
 
 
-        document.getElementById('start-recording').disabled = true;
+    // استخدام FFmpeg لدمج الصوت مع الصورة
 
-        document.getElementById('stop-recording').disabled = false;
+    ffmpeg()
 
+        .input(imagePath)
 
+        .input(audioPath)
 
-    } catch (error) {
+        .outputOptions('-c:v libx264')
 
-        console.error("⚠️ خطأ في تشغيل الميكروفون:", error);
+        .outputOptions('-c:a aac')
 
-        alert("يرجى السماح بالوصول إلى الميكروفون.");
+        .output(outputPath)
 
-    }
+        .on('end', () => {
 
-});
+            // إرسال الفيديو النهائي إلى العميل
 
+            res.download(outputPath, 'video.mp4', () => {
 
+                // حذف الملفات المؤقتة بعد الانتهاء
 
-// ⏹️ إيقاف تسجيل الصوت
+                fs.unlinkSync(audioPath);
 
-document.getElementById('stop-recording').addEventListener('click', () => {
+                fs.unlinkSync(imagePath);
 
-    if (mediaRecorder) {
+                fs.unlinkSync(outputPath);
 
-        mediaRecorder.stop();
+            });
 
-        mediaRecorder.onstop = () => {
+        })
 
-            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        .on('error', (err) => {
 
-            const audioUrl = URL.createObjectURL(audioBlob);
+            console.error("⚠️ خطأ أثناء معالجة الفيديو:", err);
 
+            res.status(500).send("حدث خطأ أثناء معالجة الفيديو.");
 
+        })
 
-            const audioElement = document.getElementById('audio');
-
-            audioElement.src = audioUrl;
-
-            audioElement.style.display = 'block';
-
-
-
-            const previewAudio = document.getElementById('preview-audio');
-
-            previewAudio.src = audioUrl;
-
-            previewAudio.style.display = 'block';
-
-        };
-
-    }
-
-
-
-    document.getElementById('start-recording').disabled = false;
-
-    document.getElementById('stop-recording').disabled = true;
+        .run();
 
 });
 
 
 
-// 📷 تحميل الصورة
+// بدء الخادم على المنفذ المحدد (أو 3000 افتراضيًا)
 
-document.getElementById('upload-image').addEventListener('click', () => {
+const PORT = process.env.PORT || 3000;
 
-    const imageInput = document.getElementById('image-upload');
+app.listen(PORT, () => {
 
-    const previewImage = document.getElementById('preview-image');
-
-
-
-    if (imageInput.files.length > 0) {
-
-        imageFile = imageInput.files[0];
-
-        const reader = new FileReader();
-
-
-
-        reader.onload = function(event) {
-
-            previewImage.src = event.target.result;
-
-            previewImage.style.display = 'block';
-
-            document.getElementById('save-to-camera-roll').style.display = 'block';
-
-        };
-
-
-
-        reader.readAsDataURL(imageFile);
-
-    } else {
-
-        alert("⚠️ يرجى تحميل صورة.");
-
-    }
-
-});
-
-
-
-// 🎥 إنشاء الفيديو
-
-document.getElementById('save-to-camera-roll').addEventListener('click', async () => {
-
-    if (!audioBlob || !imageFile) {
-
-        alert("⚠️ يرجى تسجيل الصوت وتحميل صورة أولًا.");
-
-        return;
-
-    }
-
-
-
-    const formData = new FormData();
-
-    formData.append('audio', audioBlob, 'audio.webm');
-
-    formData.append('image', imageFile, 'image.png');
-
-
-
-    try {
-
-        const response = await fetch('/merge', {
-
-            method: 'POST',
-
-            body: formData,
-
-        });
-
-
-
-        if (!response.ok) {
-
-            throw new Error("حدث خطأ أثناء معالجة الفيديو.");
-
-        }
-
-
-
-        const videoBlob = await response.blob();
-
-        const videoUrl = URL.createObjectURL(videoBlob);
-
-
-
-        // عرض الفيديو
-
-        const previewVideo = document.getElementById('preview-video');
-
-        previewVideo.src = videoUrl;
-
-        previewVideo.style.display = 'block';
-
-
-
-        // زر التنزيل
-
-        const downloadButton = document.createElement('a');
-
-        downloadButton.href = videoUrl;
-
-        downloadButton.download = 'eid_greeting_card.mp4';
-
-        downloadButton.textContent = '📥 تنزيل الفيديو';
-
-        downloadButton.style.display = 'block';
-
-        downloadButton.style.background = '#4CAF50';
-
-        downloadButton.style.color = 'white';
-
-        downloadButton.style.padding = '10px';
-
-        downloadButton.style.marginTop = '10px';
-
-        downloadButton.style.textAlign = 'center';
-
-        downloadButton.style.borderRadius = '5px';
-
-        downloadButton.style.textDecoration = 'none';
-
-
-
-        document.querySelector('.preview-section').appendChild(downloadButton);
-
-
-
-        alert("🎉 تم إنشاء الفيديو بنجاح!");
-
-    } catch (error) {
-
-        console.error("⚠️ خطأ أثناء إنشاء الفيديو:", error);
-
-        alert("حدث خطأ أثناء إنشاء الفيديو. يرجى المحاولة مرة أخرى.");
-
-    }
+    console.log(`الخادم يعمل على http://localhost:${PORT}`);
 
 });
 
