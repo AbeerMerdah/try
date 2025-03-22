@@ -1,10 +1,9 @@
+
 let mediaRecorder;
 
 let audioChunks = [];
 
 let audioBlob;
-
-let audioUrl;
 
 let imageFile;
 
@@ -66,7 +65,7 @@ document.getElementById('stop-recording').addEventListener('click', () => {
 
             audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
-            audioUrl = URL.createObjectURL(audioBlob);
+            const audioUrl = URL.createObjectURL(audioBlob);
 
 
 
@@ -106,8 +105,6 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
     const previewImage = document.getElementById('preview-image');
 
-    const saveButton = document.getElementById('save-to-camera-roll');
-
 
 
     if (imageInput.files.length > 0) {
@@ -124,7 +121,7 @@ document.getElementById('upload-image').addEventListener('click', () => {
 
             previewImage.style.display = 'block';
 
-            saveButton.style.display = 'block';
+            document.getElementById('save-to-camera-roll').style.display = 'block';
 
         };
 
@@ -156,149 +153,91 @@ document.getElementById('save-to-camera-roll').addEventListener('click', async (
 
 
 
-    const canvas = document.createElement('canvas');
+    const formData = new FormData();
 
-    const context = canvas.getContext('2d');
+    formData.append('audio', audioBlob, 'audio.webm');
 
-    const image = new Image();
+    formData.append('image', imageFile, 'image.png');
 
-    const audio = new Audio(audioUrl);
 
 
+    try {
 
-    image.src = URL.createObjectURL(imageFile);
+        const response = await fetch('/merge', {
 
-    await new Promise((resolve) => (image.onload = resolve));
+            method: 'POST',
 
+            body: formData,
 
+        });
 
-    canvas.width = image.width;
 
-    canvas.height = image.height;
 
-    context.drawImage(image, 0, 0);
+        if (!response.ok) {
 
+            throw new Error("حدث خطأ أثناء معالجة الفيديو.");
 
+        }
 
-    const stream = canvas.captureStream(30);
 
-    const videoRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
-    const videoChunks = [];
+        const videoBlob = await response.blob();
 
+        const videoUrl = URL.createObjectURL(videoBlob);
 
 
-    videoRecorder.ondataavailable = event => {
 
-        videoChunks.push(event.data);
+        // عرض الفيديو
 
-    };
+        const previewVideo = document.getElementById('preview-video');
 
+        previewVideo.src = videoUrl;
 
+        previewVideo.style.display = 'block';
 
-    videoRecorder.start();
 
-    audio.play();
 
+        // زر التنزيل
 
+        const downloadButton = document.createElement('a');
 
-    audio.onended = () => {
+        downloadButton.href = videoUrl;
 
-        videoRecorder.stop();
+        downloadButton.download = 'eid_greeting_card.mp4';
 
-        videoRecorder.onstop = async () => {
+        downloadButton.textContent = '📥 تنزيل الفيديو';
 
-            const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+        downloadButton.style.display = 'block';
 
+        downloadButton.style.background = '#4CAF50';
 
+        downloadButton.style.color = 'white';
 
-            // تحويل الفيديو إلى MP4
+        downloadButton.style.padding = '10px';
 
-            const finalVideoBlob = await convertWebMToMP4(videoBlob);
+        downloadButton.style.marginTop = '10px';
 
-            const videoUrl = URL.createObjectURL(finalVideoBlob);
+        downloadButton.style.textAlign = 'center';
 
+        downloadButton.style.borderRadius = '5px';
 
+        downloadButton.style.textDecoration = 'none';
 
-            // عرض الفيديو بعد إنشائه
 
-            const previewVideo = document.createElement('video');
 
-            previewVideo.src = videoUrl;
+        document.querySelector('.preview-section').appendChild(downloadButton);
 
-            previewVideo.controls = true;
 
-            previewVideo.style.width = '100%';
 
-            previewVideo.style.marginTop = '10px';
+        alert("🎉 تم إنشاء الفيديو بنجاح!");
 
+    } catch (error) {
 
+        console.error("⚠️ خطأ أثناء إنشاء الفيديو:", error);
 
-            // زر التنزيل
+        alert("حدث خطأ أثناء إنشاء الفيديو. يرجى المحاولة مرة أخرى.");
 
-            const downloadButton = document.createElement('a');
-
-            downloadButton.href = videoUrl;
-
-            downloadButton.download = 'eid_greeting_card.mp4';
-
-            downloadButton.textContent = '📥 تنزيل الفيديو';
-
-            downloadButton.style.display = 'block';
-
-            downloadButton.style.background = '#4CAF50';
-
-            downloadButton.style.color = 'white';
-
-            downloadButton.style.padding = '10px';
-
-            downloadButton.style.marginTop = '10px';
-
-            downloadButton.style.textAlign = 'center';
-
-            downloadButton.style.borderRadius = '5px';
-
-            downloadButton.style.textDecoration = 'none';
-
-
-
-            document.querySelector('.preview-section').appendChild(previewVideo);
-
-            document.querySelector('.preview-section').appendChild(downloadButton);
-
-
-
-            alert("🎉 تم إنشاء الفيديو بنجاح!");
-
-        };
-
-    };
+    }
 
 });
-
-
-
-// **📌 تحويل WebM إلى MP4**
-
-async function convertWebMToMP4(videoBlob) {
-
-    return new Promise(resolve => {
-
-        const reader = new FileReader();
-
-        reader.readAsArrayBuffer(videoBlob);
-
-        reader.onload = async () => {
-
-            const buffer = new Uint8Array(reader.result);
-
-            const finalBlob = new Blob([buffer], { type: 'video/mp4' });
-
-            resolve(finalBlob);
-
-        };
-
-    });
-
-}
 
